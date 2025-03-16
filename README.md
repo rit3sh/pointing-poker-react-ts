@@ -1,54 +1,90 @@
-# React + TypeScript + Vite
+# Planning Poker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A real-time planning poker application for agile teams to estimate story points collaboratively.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Create and join planning poker rooms
+- Vote on stories using standard Fibonacci sequence (0, 1, 2, 3, 5, 8, 13, 21)
+- Special voting options ("?" and "coffee")
+- Spectator mode for observers
+- Real-time updates using WebSockets
+- Reveal/hide votes functionality
+- Calculate average of numeric votes
+- Easy room sharing with copy button
+- Browse active rooms from the home screen
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Frontend**: React, TypeScript, Chakra UI
+- **Backend**: Node.js, Express, Socket.IO
+- **State Management**: React Context API
+- **Styling**: Chakra UI components
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+## Getting Started
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Prerequisites
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- Node.js (v14 or higher)
+- npm or yarn
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+### Installation
+
+1. Clone the repository
+   ```
+   git clone https://github.com/yourusername/pointing-poker.git
+   cd pointing-poker
+   ```
+
+2. Install dependencies for both client and server
+   ```
+   # Install client dependencies
+   npm install
+   
+   # Install server dependencies
+   cd server
+   npm install
+   ```
+
+### Running the Application
+
+1. Start the server
+   ```
+   cd server
+   npm run dev
+   ```
+
+2. In a separate terminal, start the client
+   ```
+   npm run dev
+   ```
+
+3. Open your browser and navigate to `http://localhost:5173`
+
+## Usage
+
+1. **Create a Room**:
+   - Enter your name
+   - Enter a room name
+   - Click "Create Room"
+
+2. **Join a Room**:
+   - Enter your name
+   - Select a room from the dropdown or enter a room ID
+   - Optionally check "Join as Spectator"
+   - Click "Join Room"
+
+3. **In the Room**:
+   - Set a story/task description
+   - Vote on the story by selecting a card
+   - Reveal votes when everyone has voted
+   - Reset votes for the next story
+
+## License
+
+MIT
+
+## Acknowledgments
+
+- Fibonacci sequence for story point estimation
+- Agile development methodologies
