@@ -34,8 +34,6 @@ const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
 	const [pendingUserName, setPendingUserName] = useState<string | null>(null);
 
 	const handleRoomUpdate = useCallback((updatedRoom: Room) => {
-		console.log("Handling room update:", updatedRoom);
-		
 		// Reset any loading states that might be in localStorage
 		localStorage.removeItem('isJoining');
 		localStorage.removeItem('isCreating');
@@ -44,7 +42,6 @@ const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
 		if (pendingUserName) {
 			const currentUser = updatedRoom.users.find((u) => u.name === pendingUserName);
 			if (currentUser) {
-				console.log("Setting user:", currentUser);
 				setUser(currentUser);
 				setPendingUserName(null);
 			}
@@ -87,13 +84,11 @@ const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
 	}, [user]);
 
 	const createRoom = useCallback((roomName: string, userName: string) => {
-		console.log("Creating room:", { roomName, userName });
 		setPendingUserName(userName);
 		socket.createRoom(roomName, userName);
 	}, [socket]);
 
 	const joinRoom = useCallback((roomId: string, userName: string, isSpectator: boolean) => {
-		console.log("Joining room:", { roomId, userName, isSpectator });
 		setPendingUserName(userName);
 		socket.joinRoom(roomId, userName, isSpectator);
 	}, [socket]);

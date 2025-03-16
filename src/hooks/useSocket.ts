@@ -1,165 +1,166 @@
-import { useEffect, useRef, useCallback } from 'react';
-import { io, Socket } from 'socket.io-client';
-import { Room } from '../types';
+import { useEffect, useRef, useCallback } from "react";
+import { io, Socket } from "socket.io-client";
+import { Room } from "../types";
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3001";
 
 // Create a singleton socket instance that persists across component renders
 let globalSocket: Socket | null = null;
 
 export interface ActiveRoom {
-  id: string;
-  name: string;
-  userCount: number;
+	id: string;
+	name: string;
+	userCount: number;
 }
 
 export const useSocket = (onRoomUpdate: (room: Room) => void) => {
-  const onRoomUpdateRef = useRef(onRoomUpdate);
-  
-  // Update the ref when the callback changes
-  useEffect(() => {
-    onRoomUpdateRef.current = onRoomUpdate;
-  }, [onRoomUpdate]);
+	const onRoomUpdateRef = useRef(onRoomUpdate);
 
-  const rejoinRoom = useCallback(() => {
-    const savedRoom = localStorage.getItem('room');
-    const savedUser = localStorage.getItem('user');
-    if (savedRoom && savedUser && globalSocket?.connected) {
-      const room = JSON.parse(savedRoom);
-      const user = JSON.parse(savedUser);
-      console.log('Attempting to rejoin room:', room.id);
-      globalSocket.emit('joinRoom', {
-        roomId: room.id,
-        userName: user.name,
-        isSpectator: user.isSpectator
-      });
-    }
-  }, []);
+	// Update the ref when the callback changes
+	useEffect(() => {
+		onRoomUpdateRef.current = onRoomUpdate;
+	}, [onRoomUpdate]);
 
-  useEffect(() => {
-    // Only create a socket if it doesn't exist yet
-    if (!globalSocket) {
-      console.log('Connecting to socket server...');
-      globalSocket = io(SOCKET_URL, {
-        transports: ['websocket'],
-        reconnection: true,
-        reconnectionDelay: 1000,
-        reconnectionAttempts: 5,
-        autoConnect: true
-      });
+	const rejoinRoom = useCallback(() => {
+		const savedRoom = localStorage.getItem("room");
+		const savedUser = localStorage.getItem("user");
+		if (savedRoom && savedUser && globalSocket?.connected) {
+			const room = JSON.parse(savedRoom);
+			const user = JSON.parse(savedUser);
+			console.log("Attempting to rejoin room:", room.id);
+			globalSocket.emit("joinRoom", {
+				roomId: room.id,
+				userName: user.name,
+				isSpectator: user.isSpectator,
+			});
+		}
+	}, []);
 
-      globalSocket.on('connect', () => {
-        console.log('Socket connected successfully');
-        rejoinRoom();
-      });
+	useEffect(() => {
+		// Only create a socket if it doesn't exist yet
+		if (!globalSocket) {
+			console.log("Connecting to socket server...");
+			globalSocket = io(SOCKET_URL, {
+				transports: ["websocket"],
+				reconnection: true,
+				reconnectionDelay: 1000,
+				reconnectionAttempts: 5,
+				autoConnect: true,
+			});
 
-      globalSocket.on('connect_error', (error) => {
-        console.error('Socket connection error:', error);
-      });
+			globalSocket.on("connect", () => {
+				console.log("Socket connected successfully");
+				rejoinRoom();
+			});
 
-      globalSocket.on('disconnect', () => {
-        console.log('Socket disconnected');
-      });
+			globalSocket.on("connect_error", (error) => {
+				console.error("Socket connection error:", error);
+			});
 
-      globalSocket.on('reconnect', () => {
-        console.log('Socket reconnected');
-        rejoinRoom();
-      });
-    }
+			globalSocket.on("disconnect", () => {
+				console.log("Socket disconnected");
+			});
 
-    // Set up event listeners that use the latest callback
-    const handleRoomUpdate = (room: Room) => {
-      console.log('Room update received:', room);
-      onRoomUpdateRef.current(room);
-    };
+			globalSocket.on("reconnect", () => {
+				console.log("Socket reconnected");
+				rejoinRoom();
+			});
+		}
 
-    globalSocket.on('roomUpdated', handleRoomUpdate);
-    
-    globalSocket.on('roomError', (error) => {
-      console.error('Room error:', error);
-      localStorage.setItem('roomError', JSON.stringify(error));
-    });
+		// Set up event listeners that use the latest callback
+		const handleRoomUpdate = (room: Room) => {
+			console.log("Room update received:", room);
+			onRoomUpdateRef.current(room);
+		};
 
-    // Clean up event listeners when component unmounts
-    return () => {
-      globalSocket?.off('roomUpdated', handleRoomUpdate);
-      // Don't disconnect the socket, just remove the listeners
-    };
-  }, [rejoinRoom]);
+		globalSocket.on("roomUpdated", handleRoomUpdate);
 
-  const createRoom = useCallback((roomName: string, userName: string) => {
-    console.log('Emitting createRoom event:', { roomName, userName });
-    if (globalSocket?.connected) {
-      globalSocket.emit('createRoom', { roomName, userName });
-    } else {
-      console.error('Socket not connected');
-    }
-  }, []);
+		globalSocket.on("roomError", (error) => {
+			console.error("Room error:", error);
+			localStorage.setItem("roomError", JSON.stringify(error));
+		});
 
-  const joinRoom = useCallback((roomId: string, userName: string, isSpectator: boolean) => {
-    console.log('Emitting joinRoom event:', { roomId, userName, isSpectator });
-    if (globalSocket?.connected) {
-      globalSocket.emit('joinRoom', { roomId, userName, isSpectator });
-    } else {
-      console.error('Socket not connected');
-    }
-  }, []);
+		// Clean up event listeners when component unmounts
+		return () => {
+			globalSocket?.off("roomUpdated", handleRoomUpdate);
+			// Don't disconnect the socket, just remove the listeners
+		};
+	}, [rejoinRoom]);
 
-  const getActiveRooms = useCallback(() => {
-    return new Promise<ActiveRoom[]>((resolve) => {
-      if (globalSocket?.connected) {
-        const handleActiveRooms = (rooms: ActiveRoom[]) => {
-          resolve(rooms);
-          globalSocket?.off('activeRooms', handleActiveRooms);
-        };
-        
-        globalSocket.on('activeRooms', handleActiveRooms);
-        globalSocket.emit('getActiveRooms');
-      } else {
-        console.error('Socket not connected');
-        resolve([]);
-      }
-    });
-  }, []);
+	const createRoom = useCallback((roomName: string, userName: string) => {
+		if (globalSocket?.connected) {
+			globalSocket.emit("createRoom", { roomName, userName });
+		} else {
+			console.error("Socket not connected");
+		}
+	}, []);
 
-  const vote = useCallback((roomId: string, value: number | null) => {
-    if (globalSocket?.connected) {
-      globalSocket.emit('vote', { roomId, value });
-    }
-  }, []);
+	const joinRoom = useCallback(
+		(roomId: string, userName: string, isSpectator: boolean) => {
+			if (globalSocket?.connected) {
+				globalSocket.emit("joinRoom", { roomId, userName, isSpectator });
+			} else {
+				console.error("Socket not connected");
+			}
+		},
+		[]
+	);
 
-  const revealVotes = useCallback((roomId: string) => {
-    if (globalSocket?.connected) {
-      globalSocket.emit('revealVotes', roomId);
-    }
-  }, []);
+	const getActiveRooms = useCallback(() => {
+		return new Promise<ActiveRoom[]>((resolve) => {
+			if (globalSocket?.connected) {
+				const handleActiveRooms = (rooms: ActiveRoom[]) => {
+					resolve(rooms);
+					globalSocket?.off("activeRooms", handleActiveRooms);
+				};
 
-  const resetVotes = useCallback((roomId: string) => {
-    if (globalSocket?.connected) {
-      globalSocket.emit('resetVotes', roomId);
-    }
-  }, []);
+				globalSocket.on("activeRooms", handleActiveRooms);
+				globalSocket.emit("getActiveRooms");
+			} else {
+				console.error("Socket not connected");
+				resolve([]);
+			}
+		});
+	}, []);
 
-  const setCurrentStory = useCallback((roomId: string, story: string) => {
-    if (globalSocket?.connected) {
-      globalSocket.emit('setCurrentStory', { roomId, story });
-    }
-  }, []);
+	const vote = useCallback((roomId: string, value: number | null) => {
+		if (globalSocket?.connected) {
+			globalSocket.emit("vote", { roomId, value });
+		}
+	}, []);
 
-  const leaveRoom = useCallback((roomId: string) => {
-    if (globalSocket?.connected) {
-      globalSocket.emit('leaveRoom', { roomId });
-    }
-  }, []);
+	const revealVotes = useCallback((roomId: string) => {
+		if (globalSocket?.connected) {
+			globalSocket.emit("revealVotes", roomId);
+		}
+	}, []);
 
-  return {
-    createRoom,
-    joinRoom,
-    vote,
-    revealVotes,
-    resetVotes,
-    setCurrentStory,
-    leaveRoom,
-    getActiveRooms,
-  };
-}; 
+	const resetVotes = useCallback((roomId: string) => {
+		if (globalSocket?.connected) {
+			globalSocket.emit("resetVotes", roomId);
+		}
+	}, []);
+
+	const setCurrentStory = useCallback((roomId: string, story: string) => {
+		if (globalSocket?.connected) {
+			globalSocket.emit("setCurrentStory", { roomId, story });
+		}
+	}, []);
+
+	const leaveRoom = useCallback((roomId: string) => {
+		if (globalSocket?.connected) {
+			globalSocket.emit("leaveRoom", { roomId });
+		}
+	}, []);
+
+	return {
+		createRoom,
+		joinRoom,
+		vote,
+		revealVotes,
+		resetVotes,
+		setCurrentStory,
+		leaveRoom,
+		getActiveRooms,
+	};
+};

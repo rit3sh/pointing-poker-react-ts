@@ -41,8 +41,6 @@ interface Vote {
 const rooms = new Map<string, Room>();
 
 io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
-
   socket.on('createRoom', ({ roomName, userName }) => {
     const roomId = uuidv4();
     const room: Room = {
@@ -64,7 +62,6 @@ io.on('connection', (socket) => {
   });
 
   socket.on('joinRoom', ({ roomId, userName, isSpectator }) => {
-    console.log(`Attempting to join room with ID: ${roomId}`);
     const room = rooms.get(roomId);
     if (!room) {
       console.log(`Room with ID ${roomId} not found`);
