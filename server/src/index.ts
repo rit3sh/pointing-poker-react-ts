@@ -8,12 +8,14 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "https://pointing-poker-client.azurewebsites.net"],
     methods: ["GET", "POST"]
   }
 });
 
-app.use(cors());
+app.use(cors({
+  origin: ["http://localhost:5173", "https://pointing-poker-client.azurewebsites.net"]
+}));
 app.use(express.json());
 
 interface Room {

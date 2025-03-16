@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { Room } from '../types';
 
-const SOCKET_URL = 'http://localhost:3001';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001';
 
 // Create a singleton socket instance that persists across component renders
 let globalSocket: Socket | null = null;

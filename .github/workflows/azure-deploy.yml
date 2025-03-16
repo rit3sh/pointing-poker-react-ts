@@ -23,6 +23,8 @@ jobs:
     
     - name: Build client
       run: npm run build
+      env:
+        VITE_SOCKET_URL: https://pointing-poker-server.azurewebsites.net
     
     # Add server files to dist
     - name: Add server files to dist
