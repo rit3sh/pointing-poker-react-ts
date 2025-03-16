@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import {
 	Box,
 	Button,
@@ -9,7 +9,6 @@ import {
 	VStack,
 	HStack,
 	useToast,
-	Tooltip,
 	useColorMode,
 } from "@chakra-ui/react";
 import { MoonIcon, SunIcon } from "@chakra-ui/icons";

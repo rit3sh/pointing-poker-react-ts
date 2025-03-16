@@ -5,9 +5,8 @@ import React, {
 	useCallback,
 	useEffect,
 } from "react";
-import { v4 as uuidv4 } from "uuid";
 import { Room, RoomContextType, User, PointValue } from "../types";
-import { useSocket, ActiveRoom } from "../hooks/useSocket";
+import { useSocket } from "../hooks/useSocket";
 
 const RoomContext = createContext<RoomContextType | null>(null);
 
