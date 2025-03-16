@@ -93,10 +93,13 @@ export const Room: React.FC = () => {
 		<Box p={8}>
 			<VStack spacing={6} alignItems="stretch">
 				<HStack justifyContent="space-between" alignItems="center">
-					<Heading>{room.name}</Heading>
+					<VStack alignItems="flex-start" spacing={0}>
+						<Text color="gray.600">Hello, {user.name}</Text>
+						<Heading>{room.name}</Heading>
+					</VStack>
 					<HStack>
 						<Tooltip label="Copied!" isOpen={showCopied}>
-							<Button colorScheme="blue" size="sm" onClick={handleCopyRoomId}>
+							<Button colorScheme="blue" onClick={handleCopyRoomId}>
 								Copy Room ID
 							</Button>
 						</Tooltip>
@@ -144,12 +147,24 @@ export const Room: React.FC = () => {
 
 				<Box>
 					<Text fontWeight="bold">Participants:</Text>
-					{room.users.map((u) => (
-						<Text key={u.id}>
-							{u.name} {u.isSpectator ? "(Spectator)" : ""}
-							{room.votes.some((v) => v.userId === u.id) ? " ✓" : ""}
-						</Text>
-					))}
+					{room.users
+						.filter(u => !u.isSpectator)
+						.map((u) => (
+							<Text key={u.id}>
+								{u.name} {room.votes.some((v) => v.userId === u.id) ? " ✓" : ""}
+							</Text>
+						))}
+					
+					{room.users.some(u => u.isSpectator) && (
+						<>
+							<Text fontWeight="bold" mt={2}>Spectators:</Text>
+							{room.users
+								.filter(u => u.isSpectator)
+								.map((u) => (
+									<Text key={u.id}>{u.name}</Text>
+								))}
+						</>
+					)}
 				</Box>
 
 				{room.isRevealed && (
