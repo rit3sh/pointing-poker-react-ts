@@ -1,0 +1,94 @@
+name: Azure Web App Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '18.x'
+    
+    # Build client
+    - name: Install client dependencies
+      run: npm ci
+    
+    - name: Build client
+      run: npm run build
+    
+    # Add server files to dist
+    - name: Add server files to dist
+      run: |
+        cat > dist/server.js << 'EOL'
+        const express = require('express');
+        const path = require('path');
+        const app = express();
+        const PORT = process.env.PORT || 8080;
+
+        // Serve static files from the current directory
+        app.use(express.static(__dirname));
+
+        // For any request that doesn't match a static file, serve index.html
+        app.get('*', (req, res) => {
+          res.sendFile(path.join(__dirname, 'index.html'));
+        });
+
+        // Start the server
+        app.listen(PORT, () => {
+          console.log(`Server running on port ${PORT}`);
+        });
+        EOL
+
+        cat > dist/package.json << 'EOL'
+        {
+          "name": "pointing-poker-client",
+          "version": "1.0.0",
+          "description": "Pointing Poker Client",
+          "main": "server.js",
+          "scripts": {
+            "start": "node server.js"
+          },
+          "dependencies": {
+            "express": "^4.18.2"
+          },
+          "engines": {
+            "node": ">=14.0.0"
+          }
+        }
+        EOL
+    
+    # Install dependencies in dist folder
+    - name: Install dependencies in dist folder
+      run: cd dist && npm install --production
+    
+    # Deploy client to Azure
+    - name: Deploy client to Azure
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'pointing-poker-client'
+        slot-name: 'production'
+        publish-profile: ${{ secrets.AZURE_CLIENT_PUBLISH_PROFILE }}
+        package: './dist'
+    
+    # Build and deploy server (if needed)
+    - name: Install server dependencies
+      run: cd server && npm ci
+    
+    - name: Build server
+      run: cd server && npm run build
+    
+    - name: Deploy server to Azure
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'pointing-poker-server'
+        slot-name: 'production'
+        publish-profile: ${{ secrets.AZURE_SERVER_PUBLISH_PROFILE }}
+        package: './server' 
