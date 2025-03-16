@@ -10,12 +10,14 @@ import {
 	HStack,
 	useToast,
 	Tooltip,
+	useColorMode,
 } from "@chakra-ui/react";
+import { MoonIcon, SunIcon } from "@chakra-ui/icons";
 import { PointingCard } from "./PointingCard";
 import { useRoom } from "../context/RoomContext";
 import { PointValue } from "../types";
 
-const POINT_VALUES: PointValue[] = [0, 1, 2, 3, 5, 8, 13, 21, "?", "coffee"];
+const POINT_VALUES: PointValue[] = [0, 1, 2, 3, 5, 8, 13, 21, "?"];
 
 export const Room: React.FC = () => {
 	const {
@@ -28,25 +30,12 @@ export const Room: React.FC = () => {
 		exitRoom,
 	} = useRoom();
 	const [story, setStory] = useState("");
-	const [showCopied, setShowCopied] = useState(false);
 	const toast = useToast();
+	const { colorMode, toggleColorMode } = useColorMode();
 
 	if (!room || !user) {
 		return <Text>Loading...</Text>;
 	}
-
-	const handleCopyRoomId = () => {
-		navigator.clipboard.writeText(room.id);
-		setShowCopied(true);
-		setTimeout(() => setShowCopied(false), 2000);
-		toast({
-			title: "Room ID copied!",
-			description: "You can share this with others to join the room",
-			status: "success",
-			duration: 2000,
-			isClosable: true,
-		});
-	};
 
 	const handleVote = (value: PointValue) => {
 		vote(value);
@@ -76,129 +65,148 @@ export const Room: React.FC = () => {
 	const calculateAverage = () => {
 		let sum = 0;
 		let count = 0;
-		
+
 		// Use a simple loop to avoid type issues
 		for (const vote of room.votes) {
-			if (typeof vote.value === 'number') {
+			if (typeof vote.value === "number") {
 				sum += vote.value;
 				count++;
 			}
 		}
-		
+
 		if (count === 0) return 0;
 		return Math.round((sum / count) * 10) / 10;
 	};
 
 	return (
-		<Box p={8}>
-			<VStack spacing={6} alignItems="stretch">
-				<HStack justifyContent="space-between" alignItems="center">
-					<VStack alignItems="flex-start" spacing={0}>
-						<Text color="gray.600">Hello, {user.name}</Text>
-						<Heading>{room.name}</Heading>
-					</VStack>
-					<HStack>
-						<Tooltip label="Copied!" isOpen={showCopied}>
-							<Button colorScheme="blue" onClick={handleCopyRoomId}>
-								Copy Room ID
-							</Button>
-						</Tooltip>
-						<Button colorScheme="red" onClick={exitRoom}>
-							Exit Room
-						</Button>
-					</HStack>
-				</HStack>
-
-				{!user.isSpectator && (
-					<HStack>
-						<Input
-							placeholder="Enter story or task description"
-							value={story}
-							onChange={(e) => setStory(e.target.value)}
-						/>
-						<Button colorScheme="blue" onClick={handleStorySubmit}>
-							Set Story
-						</Button>
-					</HStack>
-				)}
-
-				{room.currentStory && (
-					<Box p={4} bg="gray.100" borderRadius="md">
-						<Text fontWeight="bold">Current Story:</Text>
-						<Text>{room.currentStory}</Text>
-					</Box>
-				)}
-
-				{!user.isSpectator && (
-					<Grid templateColumns="repeat(auto-fit, minmax(70px, 1fr))" gap={4}>
-						{POINT_VALUES.map((value) => (
-							<PointingCard
-								key={value}
-								value={value}
-								isSelected={room.votes.some(
-									(v) => v.userId === user.id && v.value === value
-								)}
-								onClick={() => handleVote(value)}
-								isRevealed={room.isRevealed}
-							/>
-						))}
-					</Grid>
-				)}
-
-				<Box>
-					<Text fontWeight="bold">Participants:</Text>
-					{room.users
-						.filter(u => !u.isSpectator)
-						.map((u) => (
-							<Text key={u.id}>
-								{u.name} {room.votes.some((v) => v.userId === u.id) ? " ✓" : ""}
+		<>
+			<Box w="60%" mx="auto" mt={8} p={6} borderWidth={1} borderRadius="lg">
+				<VStack spacing={6} alignItems="stretch">
+					<HStack justifyContent="space-between" alignItems="center">
+						<VStack alignItems="flex-start" spacing={0}>
+							<Text fontSize="sm" color="gray.600">
+								Hello, {user.name}
 							</Text>
-						))}
-					
-					{room.users.some(u => u.isSpectator) && (
+							<Heading>{room.name}</Heading>
+						</VStack>
+						<HStack>
+							<Button
+								colorScheme={colorMode === "light" ? "gray" : "blue"}
+								onClick={toggleColorMode}
+								leftIcon={colorMode === "light" ? <MoonIcon /> : <SunIcon />}
+							>
+								{colorMode === "light" ? "Dark" : "Light"}
+							</Button>
+							<Button colorScheme="red" onClick={exitRoom}>
+								Exit Room
+							</Button>
+						</HStack>
+					</HStack>
+
+					{!user.isSpectator && (
+						<HStack>
+							<Input
+								placeholder="Enter story or task description"
+								value={story}
+								onChange={(e) => setStory(e.target.value)}
+							/>
+							<Button colorScheme="blue" onClick={handleStorySubmit}>
+								Set Story
+							</Button>
+						</HStack>
+					)}
+
+					{room.currentStory && (
+						<Box p={4} bg="gray.100" borderRadius="md">
+							<Text fontWeight="bold">Current Story:</Text>
+							<Text>{room.currentStory}</Text>
+						</Box>
+					)}
+
+					{!user.isSpectator && (
 						<>
-							<Text fontWeight="bold" mt={2}>Spectators:</Text>
-							{room.users
-								.filter(u => u.isSpectator)
-								.map((u) => (
-									<Text key={u.id}>{u.name}</Text>
+							{!room.currentStory && (
+								<Box p={4} bg="yellow.50" borderRadius="md" mb={4}>
+									<Text color="yellow.700">
+										Please set a story before voting.
+									</Text>
+								</Box>
+							)}
+							<Grid templateColumns="repeat(auto-fit, minmax(70px, 1fr))" gap={4}>
+								{POINT_VALUES.map((value) => (
+									<PointingCard
+										key={value}
+										value={value}
+										isSelected={room.votes.some(
+											(v) => v.userId === user.id && v.value === value
+										)}
+										onClick={!room.currentStory ? undefined : () => handleVote(value)}
+										isRevealed={room.isRevealed}
+										isDisabled={!room.currentStory}
+									/>
 								))}
+							</Grid>
 						</>
 					)}
-				</Box>
 
-				{room.isRevealed && (
 					<Box>
-						<Text fontWeight="bold">Results:</Text>
-						<Text>Average: {calculateAverage()}</Text>
-						{room.votes.map((vote) => {
-							const voter = room.users.find((u) => u.id === vote.userId);
-							return (
-								<Text key={vote.userId}>
-									{voter?.name}: {vote.value ?? "No vote"}
+						<Text fontWeight="bold">Participants:</Text>
+						{room.users
+							.filter((u) => !u.isSpectator)
+							.map((u) => (
+								<Text key={u.id}>
+									{u.name}{" "}
+									{room.votes.some((v) => v.userId === u.id) ? " ✓" : ""}
 								</Text>
-							);
-						})}
-					</Box>
-				)}
+							))}
 
-				<HStack>
-					<Button
-						colorScheme="green"
-						onClick={revealVotes}
-						isDisabled={room.votes.length === 0 || room.isRevealed}
-					>
-						Reveal Votes
-					</Button>
-					<Button
-						colorScheme="red"
-						onClick={resetVotes}
-						isDisabled={room.votes.length === 0}
-					>
-						Reset Votes
-					</Button>
-				</HStack>
-			</VStack>
-		</Box>
+						{room.users.some((u) => u.isSpectator) && (
+							<>
+								<Text fontWeight="bold" mt={2}>
+									Spectators:
+								</Text>
+								{room.users
+									.filter((u) => u.isSpectator)
+									.map((u) => (
+										<Text key={u.id}>{u.name}</Text>
+									))}
+							</>
+						)}
+					</Box>
+
+					<HStack>
+						<Button
+							colorScheme="green"
+							onClick={revealVotes}
+							isDisabled={room.votes.length === 0 || room.isRevealed}
+						>
+							Reveal Votes
+						</Button>
+						<Button
+							colorScheme="red"
+							onClick={resetVotes}
+							isDisabled={room.votes.length === 0}
+						>
+							Reset Votes
+						</Button>
+					</HStack>
+				</VStack>
+			</Box>
+
+			{room.isRevealed && (
+				<Box w="60%" mx="auto" mt={8} p={6} borderWidth={1} borderRadius="lg">
+					<Text fontWeight="bold">Results:</Text>
+					<Text>Average: {calculateAverage()}</Text>
+					{room.votes.map((vote) => {
+						const voter = room.users.find((u) => u.id === vote.userId);
+						return (
+							<Text key={vote.userId}>
+								{voter?.name}: {vote.value ?? "No vote"}
+							</Text>
+						);
+					})}
+				</Box>
+			)}
+		</>
 	);
 };

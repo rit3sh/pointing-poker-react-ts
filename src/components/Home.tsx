@@ -13,7 +13,9 @@ import {
 	Text,
 	HStack,
 	Spinner,
+	useColorMode,
 } from "@chakra-ui/react";
+import { MoonIcon, SunIcon } from "@chakra-ui/icons";
 import { useRoom } from "../context/RoomContext";
 import { ActiveRoom } from "../hooks/useSocket";
 
@@ -28,6 +30,7 @@ export const Home: React.FC = () => {
 	const [isLoadingRooms, setIsLoadingRooms] = useState(false);
 	const { createRoom, joinRoom, room, getActiveRooms } = useRoom();
 	const toast = useToast();
+	const { colorMode, toggleColorMode } = useColorMode();
 
 	// Fetch active rooms when component mounts
 	useEffect(() => {
@@ -120,9 +123,18 @@ export const Home: React.FC = () => {
 	return (
 		<Box maxW="md" mx="auto" mt={8} p={6} borderWidth={1} borderRadius="lg">
 			<VStack spacing={6} alignItems="stretch">
-				<Heading size="lg" textAlign="center">
-					Planning Poker
-				</Heading>
+				<HStack justifyContent="space-between">
+					<Heading size="lg">
+						Planning Poker
+					</Heading>
+					<Button 
+						size="sm" 
+						onClick={toggleColorMode}
+						leftIcon={colorMode === "light" ? <MoonIcon /> : <SunIcon />}
+					>
+						{colorMode === "light" ? "Dark" : "Light"}
+					</Button>
+				</HStack>
 
 				<ChakraFormControl>
 					<ChakraFormLabel>Your Name</ChakraFormLabel>

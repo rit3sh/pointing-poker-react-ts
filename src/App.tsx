@@ -1,27 +1,37 @@
-import { ChakraProvider, ThemeConfig } from '@chakra-ui/react';
-import { RoomProvider } from './context/RoomContext';
-import { Home } from './components/Home';
-import { Room } from './components/Room';
-import { useRoom } from './context/RoomContext';
+import {
+	ChakraProvider,
+	ThemeConfig,
+	extendTheme,
+	ColorModeScript,
+} from "@chakra-ui/react";
+import { RoomProvider } from "./context/RoomContext";
+import { Home } from "./components/Home";
+import { Room } from "./components/Room";
+import { useRoom } from "./context/RoomContext";
 
 const config: ThemeConfig = {
-  initialColorMode: 'light',
-  useSystemColorMode: false,
+	initialColorMode: "light",
+	useSystemColorMode: false,
 };
 
+const theme = extendTheme({ config });
+
 function App() {
-  return (
-    <ChakraProvider resetCSS>
-      <RoomProvider>
-        <AppContent />
-      </RoomProvider>
-    </ChakraProvider>
-  );
+	return (
+		<>
+			<ColorModeScript initialColorMode={theme.config.initialColorMode} />
+			<ChakraProvider theme={theme}>
+				<RoomProvider>
+					<AppContent />
+				</RoomProvider>
+			</ChakraProvider>
+		</>
+	);
 }
 
 const AppContent = () => {
-  const { room } = useRoom();
-  return room ? <Room /> : <Home />;
+	const { room } = useRoom();
+	return room ? <Room /> : <Home />;
 };
 
 export default App;

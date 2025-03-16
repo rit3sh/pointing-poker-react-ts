@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@chakra-ui/icons": "^2.2.4",
     "@types/express": "^5.0.0",
     "@types/node": "^22.13.10",
     "@types/socket.io": "^3.0.2",

@@ -7,6 +7,7 @@ interface PointingCardProps {
   isSelected?: boolean;
   onClick?: () => void;
   isRevealed?: boolean;
+  isDisabled?: boolean;
 }
 
 export const PointingCard: React.FC<PointingCardProps> = ({
@@ -14,6 +15,7 @@ export const PointingCard: React.FC<PointingCardProps> = ({
   isSelected = false,
   onClick,
   isRevealed = false,
+  isDisabled = false,
 }) => {
   return (
     <Box
@@ -21,21 +23,22 @@ export const PointingCard: React.FC<PointingCardProps> = ({
       w="60px"
       h="90px"
       bg={isSelected ? 'blue.500' : 'white'}
-      color={isSelected ? 'white' : 'black'}
+      color={isSelected ? 'white' : isDisabled ? 'gray.400' : 'black'}
       border="2px solid"
-      borderColor={isSelected ? 'blue.500' : 'gray.200'}
+      borderColor={isSelected ? 'blue.500' : isDisabled ? 'gray.200' : 'gray.200'}
       borderRadius="md"
       display="flex"
       alignItems="center"
       justifyContent="center"
-      cursor={onClick ? 'pointer' : 'default'}
+      cursor={isDisabled ? 'not-allowed' : onClick ? 'pointer' : 'default'}
       transition="all 0.2s"
       transform={isRevealed ? 'rotateY(0deg)' : 'rotateY(0deg)'}
-      _hover={onClick ? {
+      opacity={isDisabled ? 0.6 : 1}
+      _hover={!isDisabled && onClick ? {
         transform: 'scale(1.05)',
         boxShadow: 'lg',
       } : undefined}
-      onClick={onClick}
+      onClick={isDisabled ? undefined : onClick}
     >
       <Text fontSize="xl" fontWeight="bold">
         {value}
