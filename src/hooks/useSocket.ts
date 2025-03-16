@@ -69,7 +69,6 @@ export const useSocket = (onRoomUpdate: (room: Room) => void) => {
 
 		// Set up event listeners that use the latest callback
 		const handleRoomUpdate = (room: Room) => {
-			console.log("Room update received:", room);
 			onRoomUpdateRef.current(room);
 		};
 

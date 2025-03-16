@@ -11,7 +11,7 @@ import {
 	useToast,
 	useColorMode,
 } from "@chakra-ui/react";
-import { MoonIcon, SunIcon } from "@chakra-ui/icons";
+import { MoonIcon, SunIcon, InfoIcon } from "@chakra-ui/icons";
 import { PointingCard } from "./PointingCard";
 import { useRoom } from "../context/RoomContext";
 import { PointValue } from "../types";
@@ -79,7 +79,7 @@ export const Room: React.FC = () => {
 
 	return (
 		<>
-			<Box w="60%" mx="auto" mt={8} p={6} borderWidth={1} borderRadius="lg">
+			<Box w={{ base: "90%", md: "60%" }} mx="auto" mt={8} p={6} borderWidth={1} borderRadius="lg">
 				<VStack spacing={6} alignItems="stretch">
 					<HStack justifyContent="space-between" alignItems="center">
 						<VStack alignItems="flex-start" spacing={0}>
@@ -126,9 +126,12 @@ export const Room: React.FC = () => {
 						<>
 							{!room.currentStory && (
 								<Box p={4} bg="yellow.50" borderRadius="md" mb={4}>
-									<Text color="yellow.700">
-										Please set a story before voting.
-									</Text>
+									<HStack spacing={2}>
+										<InfoIcon color="yellow.700" />
+										<Text color="yellow.700">
+											Please set a story to enable voting.
+										</Text>
+									</HStack>
 								</Box>
 							)}
 							<Grid templateColumns="repeat(auto-fit, minmax(70px, 1fr))" gap={4}>
@@ -193,7 +196,7 @@ export const Room: React.FC = () => {
 			</Box>
 
 			{room.isRevealed && (
-				<Box w="60%" mx="auto" mt={8} p={6} borderWidth={1} borderRadius="lg">
+				<Box w={{ base: "90%", md: "60%" }} mx="auto" mt={8} p={6} borderWidth={1} borderRadius="lg">
 					<Text fontWeight="bold">Results:</Text>
 					<Text>Average: {calculateAverage()}</Text>
 					{room.votes.map((vote) => {
