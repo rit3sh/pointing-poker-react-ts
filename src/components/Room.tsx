@@ -117,7 +117,7 @@ export const Room: React.FC = () => {
 					)}
 
 					{room.currentStory && (
-						<Box p={4} bg="gray.100" borderRadius="md">
+						<Box p={4} bg={colorMode === "light" ? "gray.100" : "blackAlpha.400"} borderRadius="md">
 							<Text fontWeight="bold">Current Story:</Text>
 							<Text>{room.currentStory}</Text>
 						</Box>

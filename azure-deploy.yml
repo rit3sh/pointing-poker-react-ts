@@ -1,0 +1,48 @@
+name: Azure Web App Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '18.x'
+    
+    # Build and deploy client
+    - name: Install client dependencies
+      run: npm ci
+    
+    - name: Build client
+      run: npm run build
+    
+    - name: Deploy client to Azure
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'pointing-poker-client'
+        slot-name: 'production'
+        publish-profile: ${{ secrets.AZURE_CLIENT_PUBLISH_PROFILE }}
+        package: './dist'
+    
+    # Build and deploy server
+    - name: Install server dependencies
+      run: cd server && npm ci
+    
+    - name: Build server
+      run: cd server && npm run build
+    
+    - name: Deploy server to Azure
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'pointing-poker-server'
+        slot-name: 'production'
+        publish-profile: ${{ secrets.AZURE_SERVER_PUBLISH_PROFILE }}
+        package: './server' 
