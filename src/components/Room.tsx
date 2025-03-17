@@ -10,8 +10,9 @@ import {
 	HStack,
 	useToast,
 	useColorMode,
+	Spacer,
 } from "@chakra-ui/react";
-import { MoonIcon, SunIcon, InfoIcon } from "@chakra-ui/icons";
+import { MoonIcon, SunIcon, InfoIcon, CopyIcon } from "@chakra-ui/icons";
 import { PointingCard } from "./PointingCard";
 import { useRoom } from "../context/RoomContext";
 import { PointValue } from "../types";
@@ -79,27 +80,33 @@ export const Room: React.FC = () => {
 
 	return (
 		<>
-			<Box w={{ base: "90%", md: "60%" }} mx="auto" mt={8} p={6} borderWidth={1} borderRadius="lg">
+			<Box
+				w={{ base: "90%", md: "60%" }}
+				mx="auto"
+				mt={8}
+				p={6}
+				borderWidth={1}
+				borderRadius="lg"
+			>
 				<VStack spacing={6} alignItems="stretch">
 					<HStack justifyContent="space-between" alignItems="center">
+						<Heading>{room.name}</Heading>
+						<Spacer />
+						<Button
+							colorScheme={colorMode === "light" ? "gray" : "blue"}
+							onClick={toggleColorMode}
+							leftIcon={colorMode === "light" ? <MoonIcon /> : <SunIcon />}
+						>
+							{colorMode === "light" ? "Dark" : "Light"}
+						</Button>
+						<Button colorScheme="red" onClick={exitRoom}>
+							Exit
+						</Button>
+					</HStack>
+					<HStack justifyContent="space-between" alignItems="center">
 						<VStack alignItems="flex-start" spacing={0}>
-							<Text fontSize="sm" color="gray.600">
-								Hello, {user.name}
-							</Text>
-							<Heading>{room.name}</Heading>
+							<Text>Hello, {user.name}!</Text>
 						</VStack>
-						<HStack>
-							<Button
-								colorScheme={colorMode === "light" ? "gray" : "blue"}
-								onClick={toggleColorMode}
-								leftIcon={colorMode === "light" ? <MoonIcon /> : <SunIcon />}
-							>
-								{colorMode === "light" ? "Dark" : "Light"}
-							</Button>
-							<Button colorScheme="red" onClick={exitRoom}>
-								Exit Room
-							</Button>
-						</HStack>
 					</HStack>
 
 					{!user.isSpectator && (
@@ -116,7 +123,11 @@ export const Room: React.FC = () => {
 					)}
 
 					{room.currentStory && (
-						<Box p={4} bg={colorMode === "light" ? "gray.100" : "blackAlpha.400"} borderRadius="md">
+						<Box
+							p={4}
+							bg={colorMode === "light" ? "gray.100" : "blackAlpha.400"}
+							borderRadius="md"
+						>
 							<Text fontWeight="bold">Current Story:</Text>
 							<Text>{room.currentStory}</Text>
 						</Box>
@@ -134,7 +145,10 @@ export const Room: React.FC = () => {
 									</HStack>
 								</Box>
 							)}
-							<Grid templateColumns="repeat(auto-fit, minmax(70px, 1fr))" gap={4}>
+							<Grid
+								templateColumns="repeat(auto-fit, minmax(70px, 1fr))"
+								gap={4}
+							>
 								{POINT_VALUES.map((value) => (
 									<PointingCard
 										key={value}
@@ -142,7 +156,9 @@ export const Room: React.FC = () => {
 										isSelected={room.votes.some(
 											(v) => v.userId === user.id && v.value === value
 										)}
-										onClick={!room.currentStory ? undefined : () => handleVote(value)}
+										onClick={
+											!room.currentStory ? undefined : () => handleVote(value)
+										}
 										isRevealed={room.isRevealed}
 										isDisabled={!room.currentStory}
 									/>
@@ -196,7 +212,14 @@ export const Room: React.FC = () => {
 			</Box>
 
 			{room.isRevealed && (
-				<Box w={{ base: "90%", md: "60%" }} mx="auto" mt={8} p={6} borderWidth={1} borderRadius="lg">
+				<Box
+					w={{ base: "90%", md: "60%" }}
+					mx="auto"
+					mt={8}
+					p={6}
+					borderWidth={1}
+					borderRadius="lg"
+				>
 					<Text fontWeight="bold">Results:</Text>
 					<Text>Average: {calculateAverage()}</Text>
 					{room.votes.map((vote) => {
@@ -209,6 +232,27 @@ export const Room: React.FC = () => {
 					})}
 				</Box>
 			)}
+
+			<Box w={{ base: "90%", md: "60%" }} mx="auto" mt={8} borderRadius="lg">
+				<HStack justify="space-between" w="100%">
+					<HStack>
+						<Text>Room ID: {room.id}</Text>
+						<CopyIcon
+							cursor="pointer"
+							onClick={() => {
+								navigator.clipboard.writeText(room.id);
+								toast({
+									title: "Room ID copied",
+									status: "success",
+									duration: 2000,
+									isClosable: true,
+								});
+							}}
+						/>
+					</HStack>
+					<Text>Date: {new Date().toLocaleDateString()}</Text>
+				</HStack>
+			</Box>
 		</>
 	);
 };
