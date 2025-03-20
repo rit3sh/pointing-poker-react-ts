@@ -38,6 +38,20 @@ const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
 		localStorage.removeItem('isJoining');
 		localStorage.removeItem('isCreating');
 		
+		// Check if room ID has changed (user has been moved to a different room)
+		if (room && updatedRoom.id !== room.id) {
+			// Room ID has changed, redirect to home page
+			setRoom(null);
+			setUser(null);
+			setPendingUserName(null);
+			localStorage.removeItem('room');
+			localStorage.removeItem('user');
+			
+			// URL will be updated by the useEffect
+			
+			return;
+		}
+		
 		// If we're waiting for a user to be created
 		if (pendingUserName) {
 			const currentUser = updatedRoom.users.find((u) => u.name === pendingUserName);
@@ -62,7 +76,7 @@ const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
 
 		// Update the room state
 		setRoom(updatedRoom);
-	}, [user, pendingUserName]);
+	}, [room, user, pendingUserName]);
 
 	const socket = useSocket(handleRoomUpdate);
 
@@ -70,8 +84,22 @@ const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
 	useEffect(() => {
 		if (room) {
 			localStorage.setItem("room", JSON.stringify(room));
+			
+			// Update URL with roomId whenever room changes
+			const url = new URL(window.location.href);
+			// First remove any existing roomId parameter to avoid duplicates
+			url.searchParams.delete('roomId');
+			// Then add the current roomId
+			url.searchParams.set('roomId', room.id);
+			// Use pushState instead of replaceState to ensure it's in browser history
+			window.history.pushState({}, '', url.toString());
 		} else {
 			localStorage.removeItem("room");
+			
+			// Remove roomId from URL when no room is active
+			const url = new URL(window.location.href);
+			url.searchParams.delete('roomId');
+			window.history.pushState({}, '', url.toString());
 		}
 	}, [room]);
 

@@ -37,6 +37,13 @@ export const Room: React.FC = () => {
 		return <Text>Loading...</Text>;
 	}
 
+	const handleExitRoom = () => {
+		// URL will be updated by RoomContext
+		
+		// Call the exitRoom function from context
+		exitRoom();
+	};
+
 	const handleVote = (value: PointValue) => {
 		vote(value);
 		toast({
@@ -99,7 +106,7 @@ export const Room: React.FC = () => {
 						>
 							{colorMode === "light" ? "Dark" : "Light"}
 						</Button>
-						<Button colorScheme="red" onClick={exitRoom}>
+						<Button colorScheme="red" onClick={handleExitRoom}>
 							Exit
 						</Button>
 					</HStack>
@@ -236,19 +243,25 @@ export const Room: React.FC = () => {
 			<Box w={{ base: "90%", md: "60%" }} mx="auto" mt={8} borderRadius="lg">
 				<HStack justify="space-between" w="100%">
 					<HStack>
-						<Text>Room ID: {room.id}</Text>
-						<CopyIcon
-							cursor="pointer"
+						<Text>Room URL: {window.location.origin}?roomId={room.id}</Text>
+						
+						<Button 
+							size="xs" 
+							leftIcon={<CopyIcon />}
 							onClick={() => {
-								navigator.clipboard.writeText(room.id);
+								const shareUrl = `${window.location.origin}?roomId=${room.id}`;
+								navigator.clipboard.writeText(shareUrl);
 								toast({
-									title: "Room ID copied",
+									title: "Share link copied",
+									description: "URL with room ID has been copied to clipboard",
 									status: "success",
 									duration: 2000,
 									isClosable: true,
 								});
 							}}
-						/>
+						>
+							Copy Share Link
+						</Button>
 					</HStack>
 					<Text>Date: {new Date().toLocaleDateString()}</Text>
 				</HStack>
