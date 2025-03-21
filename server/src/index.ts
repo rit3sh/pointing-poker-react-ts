@@ -59,6 +59,11 @@ io.on('connection', (socket) => {
     rooms.set(roomId, room);
     socket.join(roomId);
     io.to(roomId).emit('roomUpdated', room);
+    io.emit('roomCreated', {
+      id: roomId,
+      name: roomName,
+      userCount: 1
+    });
   });
 
   socket.on('joinRoom', ({ roomId, userName, isSpectator }) => {
@@ -135,6 +140,7 @@ io.on('connection', (socket) => {
 
       if (room.users.length === 0) {
         rooms.delete(roomId);
+        io.emit('roomDeleted', roomId);
       } else {
         io.to(roomId).emit('roomUpdated', room);
       }
@@ -160,6 +166,7 @@ io.on('connection', (socket) => {
         
         if (room.users.length === 0) {
           rooms.delete(roomId);
+          io.emit('roomDeleted', roomId);
         } else {
           io.to(roomId).emit('roomUpdated', room);
         }

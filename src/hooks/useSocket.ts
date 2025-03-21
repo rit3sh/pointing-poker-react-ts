@@ -79,9 +79,26 @@ export const useSocket = (onRoomUpdate: (room: Room) => void) => {
 			localStorage.setItem("roomError", JSON.stringify(error));
 		});
 
+		// Listen for room creation and deletion events
+		globalSocket.on("roomCreated", (room: ActiveRoom) => {
+			// Emit a custom event that the Home component can listen to
+			window.dispatchEvent(new CustomEvent('activeRoomsUpdated', { 
+				detail: { type: 'created', room } 
+			}));
+		});
+
+		globalSocket.on("roomDeleted", (roomId: string) => {
+			// Emit a custom event that the Home component can listen to
+			window.dispatchEvent(new CustomEvent('activeRoomsUpdated', { 
+				detail: { type: 'deleted', roomId } 
+			}));
+		});
+
 		// Clean up event listeners when component unmounts
 		return () => {
 			globalSocket?.off("roomUpdated", handleRoomUpdate);
+			globalSocket?.off("roomCreated");
+			globalSocket?.off("roomDeleted");
 			// Don't disconnect the socket, just remove the listeners
 		};
 	}, [rejoinRoom]);
