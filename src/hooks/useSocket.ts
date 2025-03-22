@@ -7,6 +7,11 @@ const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3001";
 // Create a singleton socket instance that persists across component renders
 let globalSocket: Socket | null = null;
 
+// Add a global socket status tracker
+export const globalSocketStatus = {
+	connected: false
+};
+
 export interface ActiveRoom {
 	id: string;
 	name: string;
@@ -50,19 +55,27 @@ export const useSocket = (onRoomUpdate: (room: Room) => void) => {
 
 			globalSocket.on("connect", () => {
 				console.log("Socket connected successfully");
+				globalSocketStatus.connected = true;
+				window.dispatchEvent(new Event('socket_connected'));
 				rejoinRoom();
 			});
 
 			globalSocket.on("connect_error", (error) => {
 				console.error("Socket connection error:", error);
+				globalSocketStatus.connected = false;
+				window.dispatchEvent(new Event('socket_disconnected'));
 			});
 
 			globalSocket.on("disconnect", () => {
 				console.log("Socket disconnected");
+				globalSocketStatus.connected = false;
+				window.dispatchEvent(new Event('socket_disconnected'));
 			});
 
 			globalSocket.on("reconnect", () => {
 				console.log("Socket reconnected");
+				globalSocketStatus.connected = true;
+				window.dispatchEvent(new Event('socket_connected'));
 				rejoinRoom();
 			});
 		}
@@ -79,26 +92,21 @@ export const useSocket = (onRoomUpdate: (room: Room) => void) => {
 			localStorage.setItem("roomError", JSON.stringify(error));
 		});
 
-		// Listen for room creation and deletion events
-		globalSocket.on("roomCreated", (room: ActiveRoom) => {
-			// Emit a custom event that the Home component can listen to
+		// Listen for active rooms updates directly from the server
+		globalSocket.on("activeRoomsUpdated", (rooms: ActiveRoom[]) => {
+			console.log("Received updated active rooms:", rooms.length);
+			// Dispatch a custom event with the updated rooms
+			// This updates the active rooms list, including when user counts change
 			window.dispatchEvent(new CustomEvent('activeRoomsUpdated', { 
-				detail: { type: 'created', room } 
-			}));
-		});
-
-		globalSocket.on("roomDeleted", (roomId: string) => {
-			// Emit a custom event that the Home component can listen to
-			window.dispatchEvent(new CustomEvent('activeRoomsUpdated', { 
-				detail: { type: 'deleted', roomId } 
+				detail: { type: 'fullUpdate', rooms } 
 			}));
 		});
 
 		// Clean up event listeners when component unmounts
 		return () => {
 			globalSocket?.off("roomUpdated", handleRoomUpdate);
-			globalSocket?.off("roomCreated");
-			globalSocket?.off("roomDeleted");
+			globalSocket?.off("roomError");
+			globalSocket?.off("activeRoomsUpdated");
 			// Don't disconnect the socket, just remove the listeners
 		};
 	}, [rejoinRoom]);
@@ -123,15 +131,22 @@ export const useSocket = (onRoomUpdate: (room: Room) => void) => {
 	);
 
 	const getActiveRooms = useCallback(() => {
-		return new Promise<ActiveRoom[]>((resolve) => {
+		return new Promise<ActiveRoom[]>((resolve, reject) => {
 			if (globalSocket?.connected) {
-				const handleActiveRooms = (rooms: ActiveRoom[]) => {
-					resolve(rooms);
-					globalSocket?.off("activeRooms", handleActiveRooms);
-				};
-
-				globalSocket.on("activeRooms", handleActiveRooms);
+				// Just request rooms once without setting up a listener
 				globalSocket.emit("getActiveRooms");
+				
+				// Set up a one-time listener for the response
+				globalSocket.once("activeRooms", (rooms: ActiveRoom[]) => {
+					console.log("Initial active rooms fetch:", rooms.length);
+					resolve(rooms);
+				});
+				
+				// Add a timeout to prevent hanging if the server doesn't respond
+				setTimeout(() => {
+					console.warn("Timed out waiting for active rooms");
+					resolve([]);
+				}, 5000);
 			} else {
 				console.error("Socket not connected");
 				resolve([]);

@@ -17,7 +17,7 @@ import { PointingCard } from "./PointingCard";
 import { useRoom } from "../context/RoomContext";
 import { PointValue } from "../types";
 
-const POINT_VALUES: PointValue[] = [0, 1, 2, 3, 5, 8, 13, 21, "?"];
+const POINT_VALUES: PointValue[] = [1, 2, 3, 5, 8, 13, 20, "?"];
 
 export const Room: React.FC = () => {
 	const {
@@ -39,7 +39,7 @@ export const Room: React.FC = () => {
 
 	const handleExitRoom = () => {
 		// URL will be updated by RoomContext
-		
+
 		// Call the exitRoom function from context
 		exitRoom();
 	};
@@ -178,6 +178,7 @@ export const Room: React.FC = () => {
 						<Text fontWeight="bold">Participants:</Text>
 						{room.users
 							.filter((u) => !u.isSpectator)
+							.sort((a, b) => a.name.localeCompare(b.name))
 							.map((u) => (
 								<Text key={u.id}>
 									{u.name}{" "}
@@ -192,6 +193,7 @@ export const Room: React.FC = () => {
 								</Text>
 								{room.users
 									.filter((u) => u.isSpectator)
+									.sort((a, b) => a.name.localeCompare(b.name))
 									.map((u) => (
 										<Text key={u.id}>{u.name}</Text>
 									))}
@@ -243,10 +245,12 @@ export const Room: React.FC = () => {
 			<Box w={{ base: "90%", md: "60%" }} mx="auto" mt={8} borderRadius="lg">
 				<HStack justify="space-between" w="100%">
 					<HStack>
-						<Text>Room URL: {window.location.origin}?roomId={room.id}</Text>
-						
-						<Button 
-							size="xs" 
+						<Text>
+							Room URL: {window.location.origin}?roomId={room.id}
+						</Text>
+
+						<Button
+							size="xs"
 							leftIcon={<CopyIcon />}
 							onClick={() => {
 								const shareUrl = `${window.location.origin}?roomId=${room.id}`;

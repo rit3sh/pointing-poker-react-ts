@@ -20,7 +20,7 @@ export interface Room {
   currentStory: string;
 }
 
-export type PointValue = 0 | 1 | 2 | 3 | 5 | 8 | 13 | 21 | '?' | 'coffee';
+export type PointValue = 0 | 1 | 2 | 3 | 5 | 8 | 13 | 20 | '?' | 'coffee';
 
 export interface RoomContextType {
   room: Room | null;

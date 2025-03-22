@@ -18,6 +18,7 @@ import {
 import { MoonIcon, SunIcon } from "@chakra-ui/icons";
 import { useRoom } from "../context/RoomContext";
 import { ActiveRoom } from "../hooks/useSocket";
+import { globalSocketStatus } from "../hooks/useSocket";
 
 export const Home: React.FC = () => {
 	const [userName, setUserName] = useState("");
@@ -28,6 +29,7 @@ export const Home: React.FC = () => {
 	const [isCreating, setIsCreating] = useState(false);
 	const [activeRooms, setActiveRooms] = useState<ActiveRoom[]>([]);
 	const [isLoadingRooms, setIsLoadingRooms] = useState(false);
+	const [socketConnected, setSocketConnected] = useState(false);
 	const { createRoom, joinRoom, room, getActiveRooms } = useRoom();
 	const toast = useToast();
 	const { colorMode, toggleColorMode } = useColorMode();
@@ -62,7 +64,26 @@ export const Home: React.FC = () => {
 		return () => window.removeEventListener('popstate', handleUrlChange);
 	}, []);
 
-	// Fetch active rooms when component mounts
+	// Check socket connection status
+	useEffect(() => {
+		const checkSocketStatus = () => {
+			setSocketConnected(globalSocketStatus.connected);
+		};
+		
+		// Check initially
+		checkSocketStatus();
+		
+		// Set up listeners
+		window.addEventListener('socket_connected', checkSocketStatus);
+		window.addEventListener('socket_disconnected', checkSocketStatus);
+		
+		return () => {
+			window.removeEventListener('socket_connected', checkSocketStatus);
+			window.removeEventListener('socket_disconnected', checkSocketStatus);
+		};
+	}, []);
+
+	// Fetch active rooms when component mounts or socket reconnects
 	useEffect(() => {
 		const fetchRooms = async () => {
 			setIsLoadingRooms(true);
@@ -96,29 +117,44 @@ export const Home: React.FC = () => {
 			}
 		};
 
+		// Initially fetch rooms when component mounts
 		fetchRooms();
 		
-		// Listen for room creation and deletion events
+		// Listen for active rooms updates from the server
 		const handleActiveRoomsUpdate = (event: CustomEvent) => {
-			const { type, room, roomId } = event.detail;
+			const { type, rooms } = event.detail;
 			
-			if (type === 'created') {
-				setActiveRooms(prev => [...prev, room]);
-				// If the new room matches the URL roomId, set it as selected
+			if (type === 'fullUpdate' && Array.isArray(rooms)) {
+				console.log("Updating active rooms list:", rooms.length);
+				
+				// Check if we already have rooms and are just updating user counts
+				if (activeRooms.length > 0 && rooms.length === activeRooms.length) {
+					// Look for user count changes
+					const changedRooms = rooms.filter(newRoom => {
+						const oldRoom = activeRooms.find(r => r.id === newRoom.id);
+						return oldRoom && oldRoom.userCount !== newRoom.userCount;
+					});
+					
+					if (changedRooms.length > 0) {
+						console.log("Room user counts updated:", 
+							changedRooms.map(r => `${r.name}: ${r.userCount} users`).join(", "));
+					}
+				}
+				
+				setActiveRooms(rooms);
+				
+				// Check if current roomId exists in updated rooms
 				const urlParams = new URLSearchParams(window.location.search);
 				const roomIdParam = urlParams.get('roomId');
-				if (roomIdParam === room.id) {
-					setRoomId(room.id);
-				}
-			} else if (type === 'deleted') {
-				setActiveRooms(prev => prev.filter(r => r.id !== roomId));
-				// If the deleted room was selected, clear the selection
-				if (roomId === roomId) {
-					setRoomId("");
-					// Also clear the URL
-					const url = new URL(window.location.href);
-					url.searchParams.delete('roomId');
-					window.history.replaceState({}, '', url.toString());
+				if (roomIdParam) {
+					const roomExists = rooms.some(room => room.id === roomIdParam);
+					if (!roomExists) {
+						// Room doesn't exist, clear the URL and roomId
+						const url = new URL(window.location.href);
+						url.searchParams.delete('roomId');
+						window.history.replaceState({}, '', url.toString());
+						setRoomId("");
+					}
 				}
 			}
 		};
@@ -128,7 +164,7 @@ export const Home: React.FC = () => {
 		return () => {
 			window.removeEventListener('activeRoomsUpdated', handleActiveRoomsUpdate as EventListener);
 		};
-	}, [getActiveRooms, toast]);
+	}, [getActiveRooms, toast, socketConnected]);
 
 	// Reset loading states when room changes
 	useEffect(() => {
