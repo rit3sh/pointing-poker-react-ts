@@ -131,7 +131,7 @@ export const useSocket = (onRoomUpdate: (room: Room) => void) => {
 	);
 
 	const getActiveRooms = useCallback(() => {
-		return new Promise<ActiveRoom[]>((resolve, reject) => {
+		return new Promise<ActiveRoom[]>((resolve) => {
 			if (globalSocket?.connected) {
 				// Just request rooms once without setting up a listener
 				globalSocket.emit("getActiveRooms");
