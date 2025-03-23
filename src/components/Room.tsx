@@ -11,6 +11,7 @@ import {
 	useToast,
 	useColorMode,
 	Spacer,
+	Flex,
 } from "@chakra-ui/react";
 import { MoonIcon, SunIcon, InfoIcon, CopyIcon } from "@chakra-ui/icons";
 import { PointingCard } from "./PointingCard";
@@ -153,59 +154,229 @@ export const Room: React.FC = () => {
 								</Box>
 							)}
 							<Grid
-								templateColumns="repeat(auto-fit, minmax(70px, 1fr))"
-								gap={4}
+								templateColumns={{ 
+									base: "repeat(4, 1fr)",
+									md: "repeat(8, 1fr)"
+								}}
+								gap={0}
+								mx={-6}
+								px={0}
+								width="calc(100% + 48px)"
+								justifyContent="space-between"
+								overflow="hidden"
 							>
 								{POINT_VALUES.map((value) => (
-									<PointingCard
-										key={value}
-										value={value}
-										isSelected={room.votes.some(
-											(v) => v.userId === user.id && v.value === value
-										)}
-										onClick={
-											!room.currentStory ? undefined : () => handleVote(value)
-										}
-										isRevealed={room.isRevealed}
-										isDisabled={!room.currentStory}
-									/>
+									<Box key={value} display="flex" justifyContent="center" py={4}>
+										<PointingCard
+											value={value}
+											isSelected={room.votes.some(
+												(v) => v.userId === user.id && v.value === value
+											)}
+											onClick={
+												!room.currentStory ? undefined : () => handleVote(value)
+											}
+											isRevealed={room.isRevealed}
+											isDisabled={!room.currentStory}
+										/>
+									</Box>
 								))}
 							</Grid>
 						</>
 					)}
 
-					<Box>
-						<Text fontWeight="bold">Participants:</Text>
-						{room.users
-							.filter((u) => !u.isSpectator)
-							.sort((a, b) => a.name.localeCompare(b.name))
-							.map((u) => (
-								<Text key={u.id}>
-									{u.name}{" "}
-									{room.votes.some((v) => v.userId === u.id) ? " ✓" : ""}
+					{/* Participants and Spectators area */}
+					<Flex width="100%" gap={4} flexDirection={{ base: "column", md: "row" }}>
+						{/* Participants section - 70% width on medium screens and above */}
+						<Box
+							p={4}
+							bg={colorMode === "light" ? "gray.50" : "gray.700"}
+							borderRadius="md"
+							borderWidth="1px"
+							borderColor={colorMode === "light" ? "gray.200" : "gray.600"}
+							width={{ base: "100%", md: "70%" }}
+						>
+							<Grid templateColumns="1fr 120px" gap={2} mb={3} px={2}>
+								<Text fontWeight="bold">Name</Text>
+								<Text fontWeight="bold" textAlign="center">
+									Vote
 								</Text>
-							))}
+							</Grid>
 
-						{room.users.some((u) => u.isSpectator) && (
-							<>
-								<Text fontWeight="bold" mt={2}>
-									Spectators:
-								</Text>
+							<VStack spacing={2} align="stretch">
+								{/* Active Participants */}
 								{room.users
-									.filter((u) => u.isSpectator)
+									.filter((participant) => !participant.isSpectator)
 									.sort((a, b) => a.name.localeCompare(b.name))
-									.map((u) => (
-										<Text key={u.id}>{u.name}</Text>
+									.map((participant) => (
+										<Grid
+											key={participant.id}
+											templateColumns="1fr 120px"
+											gap={2}
+											p={2}
+											borderRadius="md"
+										>
+											<Flex align="center">
+												<Text
+													fontWeight={
+														participant.id === user.id ? "bold" : "normal"
+													}
+												>
+													{participant.name}{" "}
+													{participant.id === user.id && "(you)"}
+												</Text>
+											</Flex>
+											<Flex justify="center" align="center" minHeight="40px">
+												{!room.votes.find(
+													(vote) => vote.userId === participant.id
+												) ? (
+													<Box
+														p={2}
+														bg={colorMode === "light" ? "gray.100" : "gray.600"}
+														borderRadius="md"
+														textAlign="center"
+														minWidth="80px"
+														display="flex"
+														justifyContent="center"
+														alignItems="center"
+														height="40px"
+													>
+														<Text
+															fontSize="sm"
+															color={
+																colorMode === "light" ? "gray.500" : "gray.300"
+															}
+														>
+															no vote
+														</Text>
+													</Box>
+												) : !room.isRevealed ? (
+													<Box
+														p={2}
+														bg={colorMode === "light" ? "green.100" : "green.700"}
+														color={colorMode === "light" ? "green.800" : "white"}
+														borderRadius="md"
+														textAlign="center"
+														minWidth="80px"
+														display="flex"
+														justifyContent="center"
+														alignItems="center"
+														height="40px"
+													>
+														<Text fontWeight="bold">✓</Text>
+													</Box>
+												) : (
+													<Box
+														p={2}
+														bg={colorMode === "light" ? "blue.100" : "blue.700"}
+														color={colorMode === "light" ? "blue.800" : "white"}
+														borderRadius="md"
+														textAlign="center"
+														minWidth="80px"
+														display="flex"
+														justifyContent="center"
+														alignItems="center"
+														height="40px"
+													>
+														<Text fontWeight="bold">
+															{
+																room.votes.find(
+																	(vote) => vote.userId === participant.id
+																)?.value
+															}
+														</Text>
+													</Box>
+												)}
+											</Flex>
+										</Grid>
 									))}
-							</>
-						)}
-					</Box>
+
+								{room.isRevealed && room.votes.length > 0 && (
+									<>
+										<hr />
+										<Grid
+											templateColumns="1fr 120px"
+											gap={2}
+											p={2}
+											borderRadius="md"
+										>
+											<Flex align="center">
+												<Text fontWeight="bold">Average</Text>
+											</Flex>
+											<Flex justify="center" align="center" minHeight="40px">
+												<Box
+													p={2}
+													bg={colorMode === "light" ? "blue.900" : "gray.100"}
+													color={colorMode === "light" ? "white" : "black"}
+													borderRadius="md"
+													textAlign="center"
+													minWidth="80px"
+													display="flex"
+													justifyContent="center"
+													alignItems="center"
+													height="40px"
+												>
+													<Text fontWeight="bold">{calculateAverage()}</Text>
+												</Box>
+											</Flex>
+										</Grid>
+									</>
+								)}
+							</VStack>
+						</Box>
+
+						{/* Spectators section - 30% width on medium screens and above */}
+						<Box
+							p={4}
+							bg={colorMode === "light" ? "gray.50" : "gray.700"}
+							borderRadius="md"
+							borderWidth="1px"
+							borderColor={colorMode === "light" ? "gray.200" : "gray.600"}
+							width={{ base: "100%", md: "30%" }}
+						>
+							<Grid templateColumns="1fr" gap={2} mb={3} px={2}>
+								<Text fontWeight="bold">Spectators</Text>
+							</Grid>
+							<VStack spacing={2} align="stretch">
+								{room.users
+									.filter((spectator) => spectator.isSpectator)
+									.sort((a, b) => a.name.localeCompare(b.name))
+									.map((spectator) => (
+										<Grid
+											key={spectator.id}
+											templateColumns="1fr"
+											gap={2}
+											p={2}
+											borderRadius="md"
+										>
+											<Flex align="center">
+												<Text
+													fontWeight={spectator.id === user.id ? "bold" : "normal"}
+													color={colorMode === "light" ? "gray.600" : "gray.300"}
+												>
+													{spectator.name} {spectator.id === user.id && "(you)"}
+												</Text>
+											</Flex>
+										</Grid>
+									))}
+								{room.users.filter((u) => u.isSpectator).length === 0 && (
+									<Text
+										fontSize="sm"
+										color={colorMode === "light" ? "gray.500" : "gray.400"}
+										p={2}
+									>
+										No spectators at the moment.
+									</Text>
+								)}
+							</VStack>
+						</Box>
+					</Flex>
 
 					<HStack>
 						<Button
 							colorScheme="green"
 							onClick={revealVotes}
 							isDisabled={room.votes.length === 0 || room.isRevealed}
+							leftIcon={<InfoIcon />}
 						>
 							Reveal Votes
 						</Button>
@@ -220,35 +391,9 @@ export const Room: React.FC = () => {
 				</VStack>
 			</Box>
 
-			{room.isRevealed && (
-				<Box
-					w={{ base: "90%", md: "60%" }}
-					mx="auto"
-					mt={8}
-					p={6}
-					borderWidth={1}
-					borderRadius="lg"
-				>
-					<Text fontWeight="bold">Results:</Text>
-					<Text>Average: {calculateAverage()}</Text>
-					{room.votes.map((vote) => {
-						const voter = room.users.find((u) => u.id === vote.userId);
-						return (
-							<Text key={vote.userId}>
-								{voter?.name}: {vote.value ?? "No vote"}
-							</Text>
-						);
-					})}
-				</Box>
-			)}
-
 			<Box w={{ base: "90%", md: "60%" }} mx="auto" mt={8} borderRadius="lg">
 				<HStack justify="space-between" w="100%">
 					<HStack>
-						<Text>
-							Room URL: {window.location.origin}?roomId={room.id}
-						</Text>
-
 						<Button
 							size="xs"
 							leftIcon={<CopyIcon />}

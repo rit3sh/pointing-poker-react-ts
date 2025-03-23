@@ -24,3 +24,4 @@ dist-ssr
 *.sw?
 client-publish.xml
 server-publish.xml
+server/.env

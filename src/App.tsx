@@ -10,7 +10,7 @@ import { Room } from "./components/Room";
 import { useRoom } from "./context/RoomContext";
 
 const config: ThemeConfig = {
-	initialColorMode: "light",
+	initialColorMode: "dark",
 	useSystemColorMode: false,
 };
 
