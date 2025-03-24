@@ -24,6 +24,8 @@ import {
 	RepeatIcon,
 	ViewIcon,
 	CheckCircleIcon,
+	ChatIcon,
+	InfoOutlineIcon,
 } from "@chakra-ui/icons";
 import { PointingCard } from "./PointingCard";
 import { useRoom } from "../context/RoomContext";
@@ -51,19 +53,21 @@ export const Room: React.FC = () => {
 	// Effect to update the timer
 	useEffect(() => {
 		let intervalId: number;
-		
+
 		if (room?.currentStory) {
 			// Initialize the start time if not set
 			if (!startTime) {
 				setStartTime(Date.now());
 			}
-			
+
 			// Update the elapsed time every second
 			intervalId = setInterval(() => {
 				if (startTime) {
 					const elapsed = Math.floor((Date.now() - startTime) / 1000);
-					const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
-					const seconds = (elapsed % 60).toString().padStart(2, '0');
+					const minutes = Math.floor(elapsed / 60)
+						.toString()
+						.padStart(2, "0");
+					const seconds = (elapsed % 60).toString().padStart(2, "0");
 					setElapsedTime(`${minutes}:${seconds}`);
 				}
 			}, 1000);
@@ -72,7 +76,7 @@ export const Room: React.FC = () => {
 			setStartTime(null);
 			setElapsedTime("00:00");
 		}
-		
+
 		return () => clearInterval(intervalId);
 	}, [room?.currentStory, startTime]);
 
@@ -144,6 +148,9 @@ export const Room: React.FC = () => {
 
 	return (
 		<>
+			<VStack justifyContent="space-between" alignItems="center" mt={8}>
+				<Heading>{room.name}</Heading>
+			</VStack>
 			<Box
 				w={{ base: "90%", md: "60%" }}
 				mx="auto"
@@ -154,7 +161,9 @@ export const Room: React.FC = () => {
 			>
 				<VStack spacing={6} alignItems="stretch">
 					<HStack justifyContent="space-between" alignItems="center">
-						<Heading>{room.name}</Heading>
+						<Text>
+							Hello, <b>{user.name}</b>
+						</Text>
 						<Spacer />
 						<Button
 							colorScheme={colorMode === "light" ? "white" : "gray.700"}
@@ -187,11 +196,6 @@ export const Room: React.FC = () => {
 							Exit
 						</Button>
 					</HStack>
-					<HStack justifyContent="space-between" alignItems="center">
-						<VStack alignItems="flex-start" spacing={0}>
-							<Text>Hello, {user.name}!</Text>
-						</VStack>
-					</HStack>
 
 					{!user.isSpectator && (
 						<HStack>
@@ -216,7 +220,9 @@ export const Room: React.FC = () => {
 							<Flex align="center">
 								<Text fontWeight="bold">Current Story:</Text>
 								<Spacer />
-								<Text fontSize="sm" color="gray.500">Time elapsed: {elapsedTime}</Text>
+								<Text fontSize="sm" color="gray.500">
+									Time elapsed: {elapsedTime}
+								</Text>
 							</Flex>
 							<Box
 								p={6}

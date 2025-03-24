@@ -251,6 +251,25 @@ class FirestoreService {
   async deleteRoom(roomId: string): Promise<void> {
     await this.roomsCollection.doc(roomId).delete();
   }
+
+  // Remove all rooms from Firestore
+  async removeAllRooms(): Promise<void> {
+    try {
+      const snapshot = await this.roomsCollection.get();
+      
+      // Use a batch to delete all rooms efficiently
+      const batch = db.batch();
+      snapshot.docs.forEach(doc => {
+        batch.delete(doc.ref);
+      });
+      
+      await batch.commit();
+      console.log(`Deleted ${snapshot.size} rooms from Firestore`);
+    } catch (error) {
+      console.error('Error removing all rooms:', error);
+      throw error;
+    }
+  }
 }
 
 export default new FirestoreService(); 

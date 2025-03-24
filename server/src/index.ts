@@ -4,6 +4,7 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 import { Room, User, Vote } from './types';
 import FirestoreService from './services/FirestoreService';
+import { Request, Response } from 'express';
 
 const app = express();
 const httpServer = createServer(app);
@@ -232,6 +233,8 @@ io.on('connection', (socket) => {
 app.get('/health', (req, res) => {
   res.status(200).send('OK');
 });
+
+// Admin endpoint removed - use npm run remove-all-rooms instead
 
 const PORT = process.env.PORT || 3001;
 httpServer.listen(PORT, () => {
