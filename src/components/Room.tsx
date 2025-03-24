@@ -18,7 +18,6 @@ import {
 import {
 	MoonIcon,
 	SunIcon,
-	InfoIcon,
 	CopyIcon,
 	ArrowUpDownIcon,
 	ExternalLinkIcon,
