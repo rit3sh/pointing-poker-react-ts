@@ -14,7 +14,7 @@ import {
 	Spinner,
 	useColorMode,
 } from "@chakra-ui/react";
-import { AddIcon, MoonIcon, PlusSquareIcon, SmallAddIcon, SunIcon } from "@chakra-ui/icons";
+import { AddIcon, MoonIcon, PlusSquareIcon, SunIcon } from "@chakra-ui/icons";
 import { useRoom } from "../context/RoomContext";
 import { ActiveRoom } from "../hooks/useSocket";
 import { globalSocketStatus } from "../hooks/useSocket";
