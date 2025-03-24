@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
 	Box,
 	Button,
@@ -43,8 +43,38 @@ export const Room: React.FC = () => {
 		toggleSpectator,
 	} = useRoom();
 	const [story, setStory] = useState("");
+	const [elapsedTime, setElapsedTime] = useState<string>("00:00");
+	const [startTime, setStartTime] = useState<number | null>(null);
 	const toast = useToast();
 	const { colorMode, toggleColorMode } = useColorMode();
+
+	// Effect to update the timer
+	useEffect(() => {
+		let intervalId: number;
+		
+		if (room?.currentStory) {
+			// Initialize the start time if not set
+			if (!startTime) {
+				setStartTime(Date.now());
+			}
+			
+			// Update the elapsed time every second
+			intervalId = setInterval(() => {
+				if (startTime) {
+					const elapsed = Math.floor((Date.now() - startTime) / 1000);
+					const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+					const seconds = (elapsed % 60).toString().padStart(2, '0');
+					setElapsedTime(`${minutes}:${seconds}`);
+				}
+			}, 1000);
+		} else {
+			// Reset timer when no story is set
+			setStartTime(null);
+			setElapsedTime("00:00");
+		}
+		
+		return () => clearInterval(intervalId);
+	}, [room?.currentStory, startTime]);
 
 	if (!room || !user) {
 		return <Text>Loading...</Text>;
@@ -93,6 +123,7 @@ export const Room: React.FC = () => {
 		setCurrentStory(story);
 		setStory("");
 		resetVotes();
+		setStartTime(Date.now()); // Reset the timer when setting a new story
 	};
 
 	const calculateAverage = () => {
@@ -181,14 +212,30 @@ export const Room: React.FC = () => {
 					)}
 
 					{room.currentStory && (
-						<Box
-							p={4}
-							bg={colorMode === "light" ? "gray.100" : "blackAlpha.400"}
-							borderRadius="md"
-						>
-							<Text fontWeight="bold">Current Story:</Text>
-							<Text>{room.currentStory}</Text>
-						</Box>
+						<VStack align="stretch">
+							<Flex align="center">
+								<Text fontWeight="bold">Current Story:</Text>
+								<Spacer />
+								<Text fontSize="sm" color="gray.500">Time elapsed: {elapsedTime}</Text>
+							</Flex>
+							<Box
+								p={6}
+								bg={colorMode === "light" ? "blue.50" : "blue.900"}
+								borderRadius="lg"
+								boxShadow="xl"
+								border="2px solid"
+								borderColor={colorMode === "light" ? "blue.300" : "blue.600"}
+							>
+								<Text
+									fontSize="lg"
+									fontWeight="medium"
+									color={colorMode === "light" ? "blue.700" : "blue.100"}
+									lineHeight="tall"
+								>
+									{room.currentStory}
+								</Text>
+							</Box>
+						</VStack>
 					)}
 
 					{!user.isSpectator && (
