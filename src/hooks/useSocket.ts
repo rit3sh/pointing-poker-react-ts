@@ -178,6 +178,12 @@ export const useSocket = (onRoomUpdate: (room: Room) => void) => {
 		}
 	}, []);
 
+	const toggleSpectator = useCallback((roomId: string) => {
+		if (globalSocket?.connected) {
+			globalSocket.emit("toggleSpectator", { roomId });
+		}
+	}, []);
+
 	const leaveRoom = useCallback((roomId: string) => {
 		if (globalSocket?.connected) {
 			globalSocket.emit("leaveRoom", { roomId });
@@ -191,6 +197,7 @@ export const useSocket = (onRoomUpdate: (room: Room) => void) => {
 		revealVotes,
 		resetVotes,
 		setCurrentStory,
+		toggleSpectator,
 		leaveRoom,
 		getActiveRooms,
 	};

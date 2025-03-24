@@ -13,7 +13,15 @@ import {
 	Spacer,
 	Flex,
 } from "@chakra-ui/react";
-import { MoonIcon, SunIcon, InfoIcon, CopyIcon } from "@chakra-ui/icons";
+import {
+	MoonIcon,
+	SunIcon,
+	InfoIcon,
+	CopyIcon,
+	ArrowUpDownIcon,
+	ExternalLinkIcon,
+	RepeatIcon,
+} from "@chakra-ui/icons";
 import { PointingCard } from "./PointingCard";
 import { useRoom } from "../context/RoomContext";
 import { PointValue } from "../types";
@@ -29,6 +37,7 @@ export const Room: React.FC = () => {
 		resetVotes,
 		setCurrentStory,
 		exitRoom,
+		toggleSpectator,
 	} = useRoom();
 	const [story, setStory] = useState("");
 	const toast = useToast();
@@ -43,6 +52,21 @@ export const Room: React.FC = () => {
 
 		// Call the exitRoom function from context
 		exitRoom();
+	};
+
+	const handleToggleSpectator = () => {
+		toggleSpectator();
+		toast({
+			title: user.isSpectator
+				? "Switched to participant mode"
+				: "Switched to spectator mode",
+			description: user.isSpectator
+				? "You can now vote on stories"
+				: "Your votes have been cleared",
+			status: "info",
+			duration: 3000,
+			isClosable: true,
+		});
 	};
 
 	const handleVote = (value: PointValue) => {
@@ -101,13 +125,33 @@ export const Room: React.FC = () => {
 						<Heading>{room.name}</Heading>
 						<Spacer />
 						<Button
-							colorScheme={colorMode === "light" ? "gray" : "blue"}
+							colorScheme={colorMode === "light" ? "white" : "gray.700"}
+							bgColor={colorMode === "light" ? "gray.700" : "gray.100"}
 							onClick={toggleColorMode}
 							leftIcon={colorMode === "light" ? <MoonIcon /> : <SunIcon />}
+							shadow="md"
+							size="sm"
 						>
 							{colorMode === "light" ? "Dark" : "Light"}
 						</Button>
-						<Button colorScheme="red" onClick={handleExitRoom}>
+						<Button
+							colorScheme={user.isSpectator ? "blue" : "green"}
+							onClick={handleToggleSpectator}
+							shadow="md"
+							size="sm"
+							leftIcon={<ArrowUpDownIcon />}
+						>
+							{user.isSpectator
+								? "Switch To Participant"
+								: "Switch To Spectator"}
+						</Button>
+						<Button
+							colorScheme="red"
+							onClick={handleExitRoom}
+							shadow="md"
+							size="sm"
+							leftIcon={<ExternalLinkIcon />}
+						>
 							Exit
 						</Button>
 					</HStack>
@@ -124,7 +168,11 @@ export const Room: React.FC = () => {
 								value={story}
 								onChange={(e) => setStory(e.target.value)}
 							/>
-							<Button colorScheme="blue" onClick={handleStorySubmit}>
+							<Button
+								colorScheme="blue"
+								onClick={handleStorySubmit}
+								shadow="md"
+							>
 								Set Story
 							</Button>
 						</HStack>
@@ -154,9 +202,9 @@ export const Room: React.FC = () => {
 								</Box>
 							)}
 							<Grid
-								templateColumns={{ 
+								templateColumns={{
 									base: "repeat(4, 1fr)",
-									md: "repeat(8, 1fr)"
+									md: "repeat(8, 1fr)",
 								}}
 								gap={0}
 								mx={-6}
@@ -166,7 +214,12 @@ export const Room: React.FC = () => {
 								overflow="hidden"
 							>
 								{POINT_VALUES.map((value) => (
-									<Box key={value} display="flex" justifyContent="center" py={4}>
+									<Box
+										key={value}
+										display="flex"
+										justifyContent="center"
+										py={4}
+									>
 										<PointingCard
 											value={value}
 											isSelected={room.votes.some(
@@ -185,7 +238,11 @@ export const Room: React.FC = () => {
 					)}
 
 					{/* Participants and Spectators area */}
-					<Flex width="100%" gap={4} flexDirection={{ base: "column", md: "row" }}>
+					<Flex
+						width="100%"
+						gap={4}
+						flexDirection={{ base: "column", md: "row" }}
+					>
 						{/* Participants section - 70% width on medium screens and above */}
 						<Box
 							p={4}
@@ -252,8 +309,12 @@ export const Room: React.FC = () => {
 												) : !room.isRevealed ? (
 													<Box
 														p={2}
-														bg={colorMode === "light" ? "green.100" : "green.700"}
-														color={colorMode === "light" ? "green.800" : "white"}
+														bg={
+															colorMode === "light" ? "green.100" : "green.700"
+														}
+														color={
+															colorMode === "light" ? "green.800" : "white"
+														}
 														borderRadius="md"
 														textAlign="center"
 														minWidth="80px"
@@ -350,8 +411,12 @@ export const Room: React.FC = () => {
 										>
 											<Flex align="center">
 												<Text
-													fontWeight={spectator.id === user.id ? "bold" : "normal"}
-													color={colorMode === "light" ? "gray.600" : "gray.300"}
+													fontWeight={
+														spectator.id === user.id ? "bold" : "normal"
+													}
+													color={
+														colorMode === "light" ? "gray.600" : "gray.300"
+													}
 												>
 													{spectator.name} {spectator.id === user.id && "(you)"}
 												</Text>
@@ -377,6 +442,7 @@ export const Room: React.FC = () => {
 							onClick={revealVotes}
 							isDisabled={room.votes.length === 0 || room.isRevealed}
 							leftIcon={<InfoIcon />}
+							shadow="md"
 						>
 							Reveal Votes
 						</Button>
@@ -384,6 +450,8 @@ export const Room: React.FC = () => {
 							colorScheme="red"
 							onClick={resetVotes}
 							isDisabled={room.votes.length === 0}
+							shadow="md"
+							leftIcon={<RepeatIcon />}
 						>
 							Reset Votes
 						</Button>
@@ -408,6 +476,7 @@ export const Room: React.FC = () => {
 									isClosable: true,
 								});
 							}}
+							shadow="md"
 						>
 							Copy Share Link
 						</Button>

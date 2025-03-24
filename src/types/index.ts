@@ -31,6 +31,7 @@ export interface RoomContextType {
   revealVotes: () => void;
   resetVotes: () => void;
   setCurrentStory: (story: string) => void;
+  toggleSpectator: () => void;
   exitRoom: () => void;
   getActiveRooms: () => Promise<ActiveRoom[]>;
 } 

@@ -154,6 +154,18 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('toggleSpectator', async ({ roomId }) => {
+    try {
+      const updatedRoom = await FirestoreService.toggleSpectatorMode(roomId, socket.id);
+      if (updatedRoom) {
+        io.to(roomId).emit('roomUpdated', updatedRoom);
+      }
+    } catch (error) {
+      console.error('Error toggling spectator mode:', error);
+      socket.emit('roomError', { message: 'Failed to toggle spectator mode' });
+    }
+  });
+
   socket.on('leaveRoom', async ({ roomId }) => {
     try {
       const updatedRoom = await FirestoreService.removeUserFromRoom(roomId, socket.id);

@@ -207,10 +207,42 @@ class FirestoreService {
       room.currentStory = story;
       room.updatedAt = new Date().toISOString();
       
-      transaction.update(roomRef, { 
-        currentStory: story,
-        updatedAt: room.updatedAt 
-      });
+      transaction.update(roomRef, { currentStory: story, updatedAt: room.updatedAt });
+      return room;
+    });
+  }
+
+  // Toggle spectator mode for a user
+  async toggleSpectatorMode(roomId: string, userId: string): Promise<Room | null> {
+    const roomRef = this.roomsCollection.doc(roomId);
+    
+    return db.runTransaction(async transaction => {
+      const roomDoc = await transaction.get(roomRef);
+      if (!roomDoc.exists) {
+        return null;
+      }
+      
+      const room = roomDoc.data() as Room;
+      const userIndex = room.users.findIndex((u: User) => u.id === userId);
+      
+      if (userIndex !== -1) {
+        // Toggle the spectator status
+        room.users[userIndex].isSpectator = !room.users[userIndex].isSpectator;
+        
+        // If the user becomes a spectator, remove their votes
+        if (room.users[userIndex].isSpectator) {
+          room.votes = room.votes.filter((v: Vote) => v.userId !== userId);
+        }
+        
+        room.updatedAt = new Date().toISOString();
+        
+        transaction.update(roomRef, { 
+          users: room.users, 
+          votes: room.votes,
+          updatedAt: room.updatedAt 
+        });
+      }
+      
       return room;
     });
   }

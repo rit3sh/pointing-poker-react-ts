@@ -141,6 +141,11 @@ const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
 		socket.setCurrentStory(room.id, story);
 	}, [room, socket]);
 
+	const toggleSpectator = useCallback(() => {
+		if (!room) return;
+		socket.toggleSpectator(room.id);
+	}, [room, socket]);
+
 	const exitRoom = useCallback(() => {
 		if (room) {
 			socket.leaveRoom(room.id);
@@ -167,6 +172,7 @@ const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
 				revealVotes,
 				resetVotes,
 				setCurrentStory,
+				toggleSpectator,
 				exitRoom,
 				getActiveRooms,
 			}}

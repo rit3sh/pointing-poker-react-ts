@@ -24,7 +24,6 @@ export const Home: React.FC = () => {
 	const [userName, setUserName] = useState("");
 	const [roomName, setRoomName] = useState("");
 	const [roomId, setRoomId] = useState("");
-	const [isSpectator, setIsSpectator] = useState(false);
 	const [isJoining, setIsJoining] = useState(false);
 	const [isCreating, setIsCreating] = useState(false);
 	const [activeRooms, setActiveRooms] = useState<ActiveRoom[]>([]);
@@ -239,7 +238,7 @@ export const Home: React.FC = () => {
 		}
 
 		setIsJoining(true);
-		joinRoom(roomId, userName, isSpectator);
+		joinRoom(roomId, userName, false); // Always join as participant
 		// Room state change will reset loading state
 	};
 
@@ -258,6 +257,7 @@ export const Home: React.FC = () => {
 						size="sm" 
 						onClick={toggleColorMode}
 						leftIcon={colorMode === "light" ? <MoonIcon /> : <SunIcon />}
+						shadow="md"
 					>
 						{colorMode === "light" ? "Dark" : "Light"}
 					</Button>
@@ -286,6 +286,7 @@ export const Home: React.FC = () => {
 						width="full"
 						isLoading={isCreating}
 						loadingText="Creating..."
+						shadow="md"
 					>
 						Create Room
 					</Button>
@@ -318,22 +319,6 @@ export const Home: React.FC = () => {
 						</Text>
 					)}
 					
-					<Input
-						value={roomId}
-						onChange={(e) => setRoomId(e.target.value)}
-						placeholder="Or enter room ID manually"
-						mb={2}
-					/>
-					
-					<ChakraFormControl display="flex" alignItems="center" mt={2}>
-						<ChakraFormLabel mb="0">Join as Spectator</ChakraFormLabel>
-						<ChakraSwitch
-							isChecked={isSpectator}
-							onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-								setIsSpectator(e.target.checked)
-							}
-						/>
-					</ChakraFormControl>
 					<Button
 						mt={2}
 						colorScheme="green"
@@ -343,6 +328,7 @@ export const Home: React.FC = () => {
 						loadingText="Joining..."
 						isDisabled={!roomId.trim()}
 						data-join-button
+						shadow="md"
 					>
 						Join Room
 					</Button>
