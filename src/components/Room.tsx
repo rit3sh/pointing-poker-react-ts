@@ -24,8 +24,6 @@ import {
 	RepeatIcon,
 	ViewIcon,
 	CheckCircleIcon,
-	ChatIcon,
-	InfoOutlineIcon,
 } from "@chakra-ui/icons";
 import { PointingCard } from "./PointingCard";
 import { useRoom } from "../context/RoomContext";
