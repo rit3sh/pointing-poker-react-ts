@@ -8,7 +8,6 @@ import {
 	VStack,
 	Heading,
 	useToast,
-	Switch as ChakraSwitch,
 	Select,
 	Text,
 	HStack,
