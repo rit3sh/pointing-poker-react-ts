@@ -32,36 +32,6 @@ export const Home: React.FC = () => {
 	const toast = useToast();
 	const { colorMode, toggleColorMode } = useColorMode();
 
-	// Check for roomId in URL immediately on mount
-	useEffect(() => {
-		const urlParams = new URLSearchParams(window.location.search);
-		const roomIdParam = urlParams.get("roomId");
-		if (roomIdParam) {
-			setRoomId(roomIdParam);
-			// Focus on the join button
-			setTimeout(() => {
-				const joinButton = document.querySelector("button[data-join-button]");
-				if (joinButton) {
-					(joinButton as HTMLButtonElement).focus();
-				}
-			}, 100);
-		}
-	}, []);
-
-	// Update roomId when URL changes
-	useEffect(() => {
-		const handleUrlChange = () => {
-			const urlParams = new URLSearchParams(window.location.search);
-			const roomIdParam = urlParams.get("roomId");
-			if (roomIdParam) {
-				setRoomId(roomIdParam);
-			}
-		};
-
-		window.addEventListener("popstate", handleUrlChange);
-		return () => window.removeEventListener("popstate", handleUrlChange);
-	}, []);
-
 	// Check socket connection status
 	useEffect(() => {
 		const checkSocketStatus = () => {
@@ -88,20 +58,6 @@ export const Home: React.FC = () => {
 			try {
 				const rooms = await getActiveRooms();
 				setActiveRooms(rooms);
-
-				// Check if current roomId exists in active rooms
-				const urlParams = new URLSearchParams(window.location.search);
-				const roomIdParam = urlParams.get("roomId");
-				if (roomIdParam) {
-					const roomExists = rooms.some((room) => room.id === roomIdParam);
-					if (!roomExists) {
-						// Room doesn't exist, clear the URL and roomId
-						const url = new URL(window.location.href);
-						url.searchParams.delete("roomId");
-						window.history.replaceState({}, "", url.toString());
-						setRoomId("");
-					}
-				}
 			} catch (error) {
 				console.error("Error fetching rooms:", error);
 				toast({
@@ -144,20 +100,6 @@ export const Home: React.FC = () => {
 				}
 
 				setActiveRooms(rooms);
-
-				// Check if current roomId exists in updated rooms
-				const urlParams = new URLSearchParams(window.location.search);
-				const roomIdParam = urlParams.get("roomId");
-				if (roomIdParam) {
-					const roomExists = rooms.some((room) => room.id === roomIdParam);
-					if (!roomExists) {
-						// Room doesn't exist, clear the URL and roomId
-						const url = new URL(window.location.href);
-						url.searchParams.delete("roomId");
-						window.history.replaceState({}, "", url.toString());
-						setRoomId("");
-					}
-				}
 			}
 		};
 
@@ -274,9 +216,7 @@ export const Home: React.FC = () => {
 				</HStack>
 
 				<ChakraFormControl isRequired>
-					<ChakraFormLabel>
-						Your Name
-					</ChakraFormLabel>
+					<ChakraFormLabel>Your Name</ChakraFormLabel>
 					<Input
 						value={userName}
 						onChange={(e) => setUserName(e.target.value)}
@@ -313,19 +253,28 @@ export const Home: React.FC = () => {
 					</HStack>
 
 					{activeRooms.length > 0 ? (
-						<Select
-							placeholder="Select a room"
-							value={roomId}
-							onChange={handleRoomSelect}
-							mb={2}
-						>
-							{activeRooms.map((room) => (
-								<option key={room.id} value={room.id}>
-									{room.name} (ID: {room.id.substring(0, 8)}...) -{" "}
-									{room.userCount} user(s)
-								</option>
-							))}
-						</Select>
+						<>
+							<Select
+								placeholder="Select a room"
+								value={roomId}
+								onChange={handleRoomSelect}
+								mb={2}
+							>
+								{activeRooms.map((room) => (
+									<option key={room.id} value={room.id}>
+										{room.name} (ID: {room.id.substring(0, 8)}...) -{" "}
+										{room.userCount} user(s)
+									</option>
+								))}
+							</Select>
+
+							<Input
+								value={roomId}
+								onChange={(e) => setRoomId(e.target.value)}
+								placeholder="Or enter room ID manually"
+								mb={2}
+							/>
+						</>
 					) : (
 						<Text mb={2} fontSize="sm" color="gray.500">
 							{isLoadingRooms

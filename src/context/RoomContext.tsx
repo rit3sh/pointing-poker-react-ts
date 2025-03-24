@@ -46,9 +46,6 @@ const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
 			setPendingUserName(null);
 			localStorage.removeItem('room');
 			localStorage.removeItem('user');
-			
-			// URL will be updated by the useEffect
-			
 			return;
 		}
 		
@@ -84,22 +81,8 @@ const RoomProvider: React.FC<{ children: React.ReactNode }> = ({
 	useEffect(() => {
 		if (room) {
 			localStorage.setItem("room", JSON.stringify(room));
-			
-			// Update URL with roomId whenever room changes
-			const url = new URL(window.location.href);
-			// First remove any existing roomId parameter to avoid duplicates
-			url.searchParams.delete('roomId');
-			// Then add the current roomId
-			url.searchParams.set('roomId', room.id);
-			// Use pushState instead of replaceState to ensure it's in browser history
-			window.history.pushState({}, '', url.toString());
 		} else {
 			localStorage.removeItem("room");
-			
-			// Remove roomId from URL when no room is active
-			const url = new URL(window.location.href);
-			url.searchParams.delete('roomId');
-			window.history.pushState({}, '', url.toString());
 		}
 	}, [room]);
 

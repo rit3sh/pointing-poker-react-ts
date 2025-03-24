@@ -12,6 +12,8 @@ import {
 	useColorMode,
 	Spacer,
 	Flex,
+	Alert,
+	AlertIcon,
 } from "@chakra-ui/react";
 import {
 	MoonIcon,
@@ -50,8 +52,6 @@ export const Room: React.FC = () => {
 	}
 
 	const handleExitRoom = () => {
-		// URL will be updated by RoomContext
-
 		// Call the exitRoom function from context
 		exitRoom();
 	};
@@ -195,14 +195,10 @@ export const Room: React.FC = () => {
 					{!user.isSpectator && (
 						<>
 							{!room.currentStory && (
-								<Box p={4} bg="yellow.50" borderRadius="md" mb={4}>
-									<HStack spacing={2}>
-										<InfoIcon color="yellow.700" />
-										<Text color="yellow.700">
-											Please set a story to enable voting.
-										</Text>
-									</HStack>
-								</Box>
+								<Alert status="info">
+									<AlertIcon />
+									Please set a story to enable voting.
+								</Alert>
 							)}
 							<Grid
 								templateColumns={{
@@ -469,11 +465,11 @@ export const Room: React.FC = () => {
 							size="xs"
 							leftIcon={<CopyIcon />}
 							onClick={() => {
-								const shareUrl = `${window.location.origin}?roomId=${room.id}`;
-								navigator.clipboard.writeText(shareUrl);
+								// Create a share text with the room ID that users can manually enter
+								navigator.clipboard.writeText(`${room.id}`);
 								toast({
-									title: "Share link copied",
-									description: "URL with room ID has been copied to clipboard",
+									title: "Share info copied",
+									description: "Room ID has been copied to clipboard",
 									status: "success",
 									duration: 2000,
 									isClosable: true,
@@ -481,7 +477,7 @@ export const Room: React.FC = () => {
 							}}
 							shadow="md"
 						>
-							Copy Share Link
+							Copy Room ID
 						</Button>
 					</HStack>
 					<Text fontSize="sm">Date: {new Date().toLocaleDateString()}</Text>
