@@ -35,12 +35,12 @@ export const Home: React.FC = () => {
 	// Check for roomId in URL immediately on mount
 	useEffect(() => {
 		const urlParams = new URLSearchParams(window.location.search);
-		const roomIdParam = urlParams.get('roomId');
+		const roomIdParam = urlParams.get("roomId");
 		if (roomIdParam) {
 			setRoomId(roomIdParam);
 			// Focus on the join button
 			setTimeout(() => {
-				const joinButton = document.querySelector('button[data-join-button]');
+				const joinButton = document.querySelector("button[data-join-button]");
 				if (joinButton) {
 					(joinButton as HTMLButtonElement).focus();
 				}
@@ -52,14 +52,14 @@ export const Home: React.FC = () => {
 	useEffect(() => {
 		const handleUrlChange = () => {
 			const urlParams = new URLSearchParams(window.location.search);
-			const roomIdParam = urlParams.get('roomId');
+			const roomIdParam = urlParams.get("roomId");
 			if (roomIdParam) {
 				setRoomId(roomIdParam);
 			}
 		};
 
-		window.addEventListener('popstate', handleUrlChange);
-		return () => window.removeEventListener('popstate', handleUrlChange);
+		window.addEventListener("popstate", handleUrlChange);
+		return () => window.removeEventListener("popstate", handleUrlChange);
 	}, []);
 
 	// Check socket connection status
@@ -67,17 +67,17 @@ export const Home: React.FC = () => {
 		const checkSocketStatus = () => {
 			setSocketConnected(globalSocketStatus.connected);
 		};
-		
+
 		// Check initially
 		checkSocketStatus();
-		
+
 		// Set up listeners
-		window.addEventListener('socket_connected', checkSocketStatus);
-		window.addEventListener('socket_disconnected', checkSocketStatus);
-		
+		window.addEventListener("socket_connected", checkSocketStatus);
+		window.addEventListener("socket_disconnected", checkSocketStatus);
+
 		return () => {
-			window.removeEventListener('socket_connected', checkSocketStatus);
-			window.removeEventListener('socket_disconnected', checkSocketStatus);
+			window.removeEventListener("socket_connected", checkSocketStatus);
+			window.removeEventListener("socket_disconnected", checkSocketStatus);
 		};
 	}, []);
 
@@ -91,14 +91,14 @@ export const Home: React.FC = () => {
 
 				// Check if current roomId exists in active rooms
 				const urlParams = new URLSearchParams(window.location.search);
-				const roomIdParam = urlParams.get('roomId');
+				const roomIdParam = urlParams.get("roomId");
 				if (roomIdParam) {
-					const roomExists = rooms.some(room => room.id === roomIdParam);
+					const roomExists = rooms.some((room) => room.id === roomIdParam);
 					if (!roomExists) {
 						// Room doesn't exist, clear the URL and roomId
 						const url = new URL(window.location.href);
-						url.searchParams.delete('roomId');
-						window.history.replaceState({}, '', url.toString());
+						url.searchParams.delete("roomId");
+						window.history.replaceState({}, "", url.toString());
 						setRoomId("");
 					}
 				}
@@ -117,50 +117,60 @@ export const Home: React.FC = () => {
 
 		// Initially fetch rooms when component mounts
 		fetchRooms();
-		
+
 		// Listen for active rooms updates from the server
 		const handleActiveRoomsUpdate = (event: CustomEvent) => {
 			const { type, rooms } = event.detail;
-			
-			if (type === 'fullUpdate' && Array.isArray(rooms)) {
+
+			if (type === "fullUpdate" && Array.isArray(rooms)) {
 				console.log("Updating active rooms list:", rooms.length);
-				
+
 				// Check if we already have rooms and are just updating user counts
 				if (activeRooms.length > 0 && rooms.length === activeRooms.length) {
 					// Look for user count changes
-					const changedRooms = rooms.filter(newRoom => {
-						const oldRoom = activeRooms.find(r => r.id === newRoom.id);
+					const changedRooms = rooms.filter((newRoom) => {
+						const oldRoom = activeRooms.find((r) => r.id === newRoom.id);
 						return oldRoom && oldRoom.userCount !== newRoom.userCount;
 					});
-					
+
 					if (changedRooms.length > 0) {
-						console.log("Room user counts updated:", 
-							changedRooms.map(r => `${r.name}: ${r.userCount} users`).join(", "));
+						console.log(
+							"Room user counts updated:",
+							changedRooms
+								.map((r) => `${r.name}: ${r.userCount} users`)
+								.join(", ")
+						);
 					}
 				}
-				
+
 				setActiveRooms(rooms);
-				
+
 				// Check if current roomId exists in updated rooms
 				const urlParams = new URLSearchParams(window.location.search);
-				const roomIdParam = urlParams.get('roomId');
+				const roomIdParam = urlParams.get("roomId");
 				if (roomIdParam) {
-					const roomExists = rooms.some(room => room.id === roomIdParam);
+					const roomExists = rooms.some((room) => room.id === roomIdParam);
 					if (!roomExists) {
 						// Room doesn't exist, clear the URL and roomId
 						const url = new URL(window.location.href);
-						url.searchParams.delete('roomId');
-						window.history.replaceState({}, '', url.toString());
+						url.searchParams.delete("roomId");
+						window.history.replaceState({}, "", url.toString());
 						setRoomId("");
 					}
 				}
 			}
 		};
 
-		window.addEventListener('activeRoomsUpdated', handleActiveRoomsUpdate as EventListener);
-		
+		window.addEventListener(
+			"activeRoomsUpdated",
+			handleActiveRoomsUpdate as EventListener
+		);
+
 		return () => {
-			window.removeEventListener('activeRoomsUpdated', handleActiveRoomsUpdate as EventListener);
+			window.removeEventListener(
+				"activeRoomsUpdated",
+				handleActiveRoomsUpdate as EventListener
+			);
 		};
 	}, [getActiveRooms, toast, socketConnected]);
 
@@ -224,11 +234,12 @@ export const Home: React.FC = () => {
 		}
 
 		// Check if room exists in active rooms
-		const roomExists = activeRooms.some(room => room.id === roomId);
+		const roomExists = activeRooms.some((room) => room.id === roomId);
 		if (!roomExists) {
 			toast({
 				title: "Invalid Room ID",
-				description: "The room you're trying to join doesn't exist or has been closed.",
+				description:
+					"The room you're trying to join doesn't exist or has been closed.",
 				status: "error",
 				duration: 3000,
 				isClosable: true,
@@ -249,14 +260,14 @@ export const Home: React.FC = () => {
 		<Box maxW="md" mx="auto" mt={8} p={6} borderWidth={1} borderRadius="lg">
 			<VStack spacing={6} alignItems="stretch">
 				<HStack justifyContent="space-between">
-					<Heading size="lg">
-						Planning Poker
-					</Heading>
-					<Button 
-						size="sm" 
+					<Heading size="lg">Planning Poker</Heading>
+					<Button
+						colorScheme={colorMode === "light" ? "white" : "gray.700"}
+						bgColor={colorMode === "light" ? "gray.700" : "gray.100"}
 						onClick={toggleColorMode}
 						leftIcon={colorMode === "light" ? <MoonIcon /> : <SunIcon />}
 						shadow="md"
+						size="sm"
 					>
 						{colorMode === "light" ? "Dark" : "Light"}
 					</Button>
@@ -293,31 +304,34 @@ export const Home: React.FC = () => {
 
 				<ChakraFormControl>
 					<ChakraFormLabel>Join Existing Room</ChakraFormLabel>
-					
+
 					<HStack mb={2} alignItems="center">
 						<Text>Active Rooms:</Text>
 						{isLoadingRooms && <Spinner size="sm" />}
 					</HStack>
-					
+
 					{activeRooms.length > 0 ? (
-						<Select 
-							placeholder="Select a room" 
+						<Select
+							placeholder="Select a room"
 							value={roomId}
 							onChange={handleRoomSelect}
 							mb={2}
 						>
 							{activeRooms.map((room) => (
 								<option key={room.id} value={room.id}>
-									{room.name} (ID: {room.id.substring(0, 8)}...) - {room.userCount} user(s)
+									{room.name} (ID: {room.id.substring(0, 8)}...) -{" "}
+									{room.userCount} user(s)
 								</option>
 							))}
 						</Select>
 					) : (
 						<Text mb={2} fontSize="sm" color="gray.500">
-							{isLoadingRooms ? "Loading rooms..." : "No active rooms found. Create one!"}
+							{isLoadingRooms
+								? "Loading rooms..."
+								: "No active rooms found. Create one!"}
 						</Text>
 					)}
-					
+
 					<Button
 						mt={2}
 						colorScheme="green"

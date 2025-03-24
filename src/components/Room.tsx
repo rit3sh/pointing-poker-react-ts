@@ -21,6 +21,8 @@ import {
 	ArrowUpDownIcon,
 	ExternalLinkIcon,
 	RepeatIcon,
+	ViewIcon,
+	CheckCircleIcon,
 } from "@chakra-ui/icons";
 import { PointingCard } from "./PointingCard";
 import { useRoom } from "../context/RoomContext";
@@ -172,6 +174,7 @@ export const Room: React.FC = () => {
 								colorScheme="blue"
 								onClick={handleStorySubmit}
 								shadow="md"
+								leftIcon={<CheckCircleIcon />}
 							>
 								Set Story
 							</Button>
@@ -441,7 +444,7 @@ export const Room: React.FC = () => {
 							colorScheme="green"
 							onClick={revealVotes}
 							isDisabled={room.votes.length === 0 || room.isRevealed}
-							leftIcon={<InfoIcon />}
+							leftIcon={<ViewIcon />}
 							shadow="md"
 						>
 							Reveal Votes
@@ -481,7 +484,7 @@ export const Room: React.FC = () => {
 							Copy Share Link
 						</Button>
 					</HStack>
-					<Text>Date: {new Date().toLocaleDateString()}</Text>
+					<Text fontSize="sm">Date: {new Date().toLocaleDateString()}</Text>
 				</HStack>
 			</Box>
 		</>
