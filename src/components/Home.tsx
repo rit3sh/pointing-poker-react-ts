@@ -14,7 +14,7 @@ import {
 	Spinner,
 	useColorMode,
 } from "@chakra-ui/react";
-import { MoonIcon, SunIcon } from "@chakra-ui/icons";
+import { AddIcon, MoonIcon, PlusSquareIcon, SmallAddIcon, SunIcon } from "@chakra-ui/icons";
 import { useRoom } from "../context/RoomContext";
 import { ActiveRoom } from "../hooks/useSocket";
 import { globalSocketStatus } from "../hooks/useSocket";
@@ -273,8 +273,10 @@ export const Home: React.FC = () => {
 					</Button>
 				</HStack>
 
-				<ChakraFormControl>
-					<ChakraFormLabel>Your Name</ChakraFormLabel>
+				<ChakraFormControl isRequired>
+					<ChakraFormLabel>
+						Your Name
+					</ChakraFormLabel>
 					<Input
 						value={userName}
 						onChange={(e) => setUserName(e.target.value)}
@@ -297,6 +299,7 @@ export const Home: React.FC = () => {
 						isLoading={isCreating}
 						loadingText="Creating..."
 						shadow="md"
+						leftIcon={<AddIcon />}
 					>
 						Create Room
 					</Button>
@@ -306,7 +309,6 @@ export const Home: React.FC = () => {
 					<ChakraFormLabel>Join Existing Room</ChakraFormLabel>
 
 					<HStack mb={2} alignItems="center">
-						<Text>Active Rooms:</Text>
 						{isLoadingRooms && <Spinner size="sm" />}
 					</HStack>
 
@@ -342,6 +344,7 @@ export const Home: React.FC = () => {
 						isDisabled={!roomId.trim()}
 						data-join-button
 						shadow="md"
+						leftIcon={<PlusSquareIcon />}
 					>
 						Join Room
 					</Button>
